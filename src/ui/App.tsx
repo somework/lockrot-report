@@ -554,7 +554,7 @@ export function App({ model, title }: { model: Model; title?: string | undefined
             {filterable && railFolded && <RailSlot folded inert={sheet} />}
             {/* SearchBar hides its own box and hint when the tab has nothing to filter, and keeps the
                 count line, which a clean report still shows. Overview lists nothing to count. */}
-            {state.view !== "overview" && <SearchBar inputRef={search} />}
+            {state.view !== "overview" && <SearchBar inputRef={search} shortcutsOn={shortcutsOn} />}
             <CurrentView />
           </div>
           {state.pkg !== null && (

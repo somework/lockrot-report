@@ -2,7 +2,8 @@ import type { ComponentChildren, RefObject } from "preact";
 import { useId, useLayoutEffect } from "preact/hooks";
 import { gateFact, gateHeadline } from "../domain/gate";
 import { projectName } from "../domain/pageTitle";
-import { DATA_AS_OF, dataDay } from "../domain/share";
+import { day } from "../domain/format";
+import { AGES_AS_OF, DATA_AND_AGES_AS_OF, dataDay } from "../domain/share";
 import { newTab } from "../domain/rich";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
@@ -52,9 +53,31 @@ export interface HeaderProps {
  * The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
  * page-wide controls (legacy report.html:26-42).
  */
+/** SPEC §7.9.11, R16-9b, R16-9c: one fact for both dates, no wider than the rc.16 "data as of". */
+function HeaderDates({ dataDate, generatedAt }: { dataDate: string | null; generatedAt: string }) {
+  const ages = <b className="mono">{day(generatedAt)}</b>;
+  if (dataDate === null)
+    return (
+      <span>
+        {AGES_AS_OF} {ages}
+      </span>
+    );
+  if (dataDay(dataDate) === day(generatedAt))
+    return (
+      <span title={`${DATA_AND_AGES_AS_OF} ${day(generatedAt)}`}>
+        <span className="vh">data and ages </span>as of {ages}
+      </span>
+    );
+  return (
+    <span>
+      data <b className="mono">{dataDay(dataDate)}</b> · ages {ages}
+    </span>
+  );
+}
+
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
-  const { run, lockrot, data_date } = model.report;
+  const { run, lockrot, data_date, generated_at } = model.report;
   const ref = useMeasuredHeight<HTMLElement>("--topbar-h");
   useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
@@ -87,9 +110,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
           <span>
             target PHP <b className="mono">{run.target_php}</b>
           </span>
-          <span>
-            {DATA_AS_OF} <b className="mono">{dataDay(data_date)}</b>
-          </span>
+          <HeaderDates dataDate={data_date} generatedAt={generated_at} />
           <span>
             lockrot <b className="mono">{lockrot.version}</b>
           </span>

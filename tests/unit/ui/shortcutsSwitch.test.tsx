@@ -58,6 +58,30 @@ describe("the Keyboard shortcuts switch in the glossary", () => {
     expect(window.localStorage.getItem(SHORTCUTS_KEY)).toBe("off");
   });
 
+  test("on, the search hint names the ? key", () => {
+    render(<App model={composite()} />);
+
+    expect(screen.getByText(/for keys and search syntax/).textContent).toBe(
+      "Press ? for keys and search syntax.",
+    );
+  });
+
+  test("turned off, drops the search hint, because ? no longer opens the glossary", () => {
+    render(<App model={composite()} />);
+
+    fireEvent.click(openGlossaryKeys());
+    fireEvent.keyDown(document.body, { key: "Escape" });
+
+    expect(screen.queryByText(/for keys and search syntax/)).toBeNull();
+  });
+
+  test("saved off, shows no search hint on the next visit", () => {
+    window.localStorage.setItem(SHORTCUTS_KEY, "off");
+    render(<App model={composite()} />);
+
+    expect(screen.queryByText(/for keys and search syntax/)).toBeNull();
+  });
+
   test("reads the saved choice on the next visit", () => {
     window.localStorage.setItem(SHORTCUTS_KEY, "off");
     render(<App model={composite()} />);

@@ -176,6 +176,14 @@ function vulnerableReading(finding: Finding, flag: FindingFlag, run: Run, ctx: S
   );
 }
 
+/** G24, R16-17: the liveness word was read from the signal that a check did not block. */
+function livenessQualifier(finding: Finding): string {
+  const s2Blocked = [...finding.checks_skipped, ...finding.checks_missing].some((c) =>
+    c.blocks.includes("S2"),
+  );
+  return s2Blocked ? "read from pushes only" : "read from releases only";
+}
+
 /** G18 to G36: one counted flag's reading. */
 function flagReading(finding: Finding, flag: FindingFlag, run: Run, ctx: SheetContext): Reading {
   const { id, summary } = flag;
@@ -199,7 +207,10 @@ function flagReading(finding: Finding, flag: FindingFlag, run: Run, ctx: SheetCo
         flag.headline.source === "release"
           ? `Nothing has been released for ${oneDecimal(value)} years`
           : `There has been no ${finding.activity.event ?? "push"} for ${oneDecimal(value)} years`;
-      return reading(flag.id, !flag.degree.liveness_complete ? `${text} (read from releases only)` : text);
+      return reading(
+        flag.id,
+        flag.degree.liveness_complete ? text : `${text} (${livenessQualifier(finding)})`,
+      );
     }
     case "pinned": {
       const pin = signalData(finding, "S6");

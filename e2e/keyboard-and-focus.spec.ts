@@ -466,18 +466,24 @@ test.describe("WCAG 2.4.11: the footer never covers the focused filter", () => {
   });
 });
 
+// PD-GLOSSARY-12
 test.describe("WCAG 2.1.4: the Keyboard shortcuts switch", () => {
-  test("survives a reload, and with it off j opens nothing", async ({ page }) => {
+  test("survives a reload, and with it off j opens nothing and the search hint is gone", async ({ page }) => {
+    const hint = page.getByText("Press ? for keys and search syntax.");
     await page.goto(report2Url("composite") + "#view=findings");
     await page.getByRole("button", { name: "What these words mean" }).click();
     const glossary = page.getByRole("dialog");
     await glossary.getByText("Keys and search").click();
     const box = glossary.getByRole("checkbox", { name: "Keyboard shortcuts" });
     await expect(box).toBeChecked();
+    await expect(hint).toHaveCount(1);
     await box.uncheck();
     await page.keyboard.press("Escape");
+    await expect(hint).toHaveCount(0);
 
     await page.reload();
+    await expect(page.getByRole("searchbox", { name: "Filter packages" })).toBeVisible();
+    await expect(hint).toHaveCount(0);
     await page.keyboard.press("j");
     await page.getByRole("button", { name: "What these words mean" }).click();
     await page.getByRole("dialog").getByText("Keys and search").click();

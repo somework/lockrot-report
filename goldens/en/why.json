@@ -270,7 +270,26 @@
     "0 · ok · ages as of 2026-10-01",
     "checks missing: release age (S2) not checked (undated releases)"
   ],
+  "S2-parent-shared-installed-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "stale 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
   "S2-parent-shared-lower-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "stale 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "S2-prerelease-shared-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "stale 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "S2-prerelease-shared-older-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "stale 8 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
@@ -331,6 +350,12 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high"
   ],
+  "S8-higher-parent-dated-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
   "S8-higher-shared-alive-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
@@ -349,6 +374,15 @@
   "S8-installed-lower-dated-dagger": [
     "0 · ok · ages as of 2026-10-01",
     "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "S8-parent-shared-installed-dagger": [
+    "36 · critical from 32 · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "old-promise 4: ¼ of 16, beside left-behind (correlated evidence)",
+    "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable, so no × 2",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "S8-prerelease-installed-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",

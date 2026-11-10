@@ -525,6 +525,38 @@ describe("the flag readings of an open set that no model case reaches", () => {
     );
   });
 
+  test("G24, R16-17: a stale flag whose S2 is blocked reads from pushes only", () => {
+    const { finding, run } = modelCase("S2-shared-unresolved-dagger");
+
+    expect(finding.checks_missing.flatMap((c) => c.blocks)).toEqual(["S2"]);
+    expect(readingOf(finding, run, "stale")).toMatch(
+      /^[Tt]here has been no push for 3\.3 years \(read from pushes only\)\.$/,
+    );
+  });
+
+  test("G24, R16-17: a stale flag whose S2 check was skipped reads from pushes only", () => {
+    const { finding, run } = modelCase("S2-shared-unresolved-dagger");
+    finding.checks_skipped = finding.checks_missing.map((c) => ({ ...c, reason: "unavailable" }));
+    finding.checks_missing = [];
+
+    expect(readingOf(finding, run, "stale")).toMatch(/\(read from pushes only\)\.$/);
+  });
+
+  test("G24, R16-17: a stale flag whose S4 is blocked reads from releases only", () => {
+    const { finding, run } = modelCase("ignored-marking-unchecked-dagger");
+
+    expect(finding.checks_missing.flatMap((c) => c.blocks)).toContain("S4");
+    expect(readingOf(finding, run, "stale")).toMatch(/\(read from releases only\)\.$/);
+  });
+
+  test("G24, R16-17: a stale flag whose S4 check was skipped reads from releases only", () => {
+    const { finding, run } = modelCase("ignored-marking-unchecked-dagger");
+    finding.checks_skipped = finding.checks_missing.map((c) => ({ ...c, reason: "no_repository" }));
+    finding.checks_missing = [];
+
+    expect(readingOf(finding, run, "stale")).toMatch(/\(read from releases only\)\.$/);
+  });
+
   test.each([
     ["stale-only", "push"],
     ["either-low-dev-dagger", "commit"],

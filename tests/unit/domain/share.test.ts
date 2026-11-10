@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import { cssString, dataDay, printSections, printSheetIntro, runningLine } from "../../../src/domain/share";
 
 describe("runningLine", () => {
-  it("joins the project, the data date and the lockrot version", () => {
-    expect(runningLine("acme/app", "2026-09-24", "0.11.0")).toBe(
-      "acme/app  ·  data as of 2026-09-24  ·  lockrot 0.11.0",
+  it("joins the project, the data date, the ages date and the lockrot version", () => {
+    expect(runningLine("acme/app", "2026-09-24", "2026-10-01", "0.11.0")).toBe(
+      "acme/app  ·  data as of 2026-09-24  ·  ages as of 2026-10-01  ·  lockrot 0.11.0",
     );
-    expect(runningLine("acme/app", "2026-09-24", null)).toBe("acme/app  ·  data as of 2026-09-24");
+    expect(runningLine("acme/app", "—", "2026-10-01", null)).toBe(
+      "acme/app  ·  data as of —  ·  ages as of 2026-10-01",
+    );
   });
 });
 

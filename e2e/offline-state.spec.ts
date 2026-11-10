@@ -3,20 +3,20 @@
  * date it does not have, and Security names a lookup that did not run as not run.
  */
 import { expect, test, type Page } from "@playwright/test";
-import { report2Url } from "./support/pages";
+import { FIXTURES, pageUrl, report2Url } from "./support/pages";
 
 const runMeta = (page: Page) => page.locator(".topbar .run-meta");
 
-test("the header shows the data date as absent when no finding read repository data", async ({ page }) => {
+test("the header names only the ages date when no finding read repository data", async ({ page }) => {
   // `unknown`: root data_date is null, generated_at is a real day.
   await page.goto(report2Url("unknown"));
-  await expect(runMeta(page)).toContainText("data as of —");
-  await expect(runMeta(page)).not.toContainText(/data as of \d{4}-\d{2}-\d{2}/);
+  await expect(runMeta(page)).toContainText("ages as of 2026-10-01");
+  await expect(runMeta(page)).not.toContainText(/data (and ages as of|\d|—)/);
 });
 
 test("the header shows the day of root data_date", async ({ page }) => {
   await page.goto(report2Url("B-offline-dagger"));
-  await expect(runMeta(page)).toContainText("data as of 2026-10-01");
+  await expect(runMeta(page)).toContainText("data and ages as of 2026-10-01");
 });
 
 test("Overview Security and the Advisories tab say the lookup did not run", async ({ page }) => {
@@ -25,4 +25,56 @@ test("Overview Security and the Advisories tab say the lookup did not run", asyn
   await expect(security).toContainText("the advisory check did not run");
   await expect(security).not.toContainText("incomplete");
   await expect(page.getByRole("tab", { name: "Advisories 0, check not run" })).toBeVisible();
+});
+
+// R16-9b, R16-9c: the sticky header stays one row from 1440 px, where the rc.16 header was one row in CI's fonts.
+test.describe("the header's dates at 1440 px", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  for (const [name, url, dates] of [
+    ["one day", report2Url("composite"), "data and ages as of 2026-10-01"],
+    ["two days", pageUrl(FIXTURES.olderDataReport2), "data 2026-09-24 · ages 2026-10-01"],
+  ] as const) {
+    test(`${name}: "${dates}" keeps every header fact on the brand's row`, async ({ page }) => {
+      await page.goto(url);
+      await expect(runMeta(page)).toContainText(dates);
+      const brand = await page.locator(".topbar .brand").boundingBox();
+      const tops = await runMeta(page)
+        .locator(":scope > *")
+        .evaluateAll((facts) => facts.map((f) => f.getBoundingClientRect().top));
+      const brandBottom = (brand?.y ?? 0) + (brand?.height ?? 0);
+
+      expect(brand).not.toBeNull();
+      expect(tops.filter((top) => top >= brandBottom)).toEqual([]);
+    });
+  }
+});
+
+// R16-9c: the dates never make the header taller than the rc.16 header, one "data as of" fact with an
+// 18 px gap, rebuilt in place on the same page and fonts.
+test.describe("the header's dates against the rc.16 header", () => {
+  const heightOf = (page: Page): Promise<number> =>
+    page.locator(".topbar").evaluate((bar) => bar.getBoundingClientRect().height);
+
+  for (const width of [1366, 1440, 1600]) {
+    for (const [name, url] of [
+      ["composite", report2Url("composite")],
+      ["older data", pageUrl(FIXTURES.olderDataReport2)],
+      ["baselined-wallabag-2.6", report2Url("baselined-wallabag-2.6")],
+    ] as const) {
+      test(`${name} at ${String(width)} px is no taller than the rc.16 header`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(url);
+        const now = await heightOf(page);
+        await runMeta(page).evaluate((meta) => {
+          const dates = [...meta.children].find((fact) => fact.textContent.includes("ages"));
+          if (!(dates instanceof HTMLElement)) throw new Error("no date fact");
+          dates.textContent = "data as of 2026-10-01";
+          (meta as HTMLElement).style.columnGap = "18px";
+        });
+
+        expect(now).toBeLessThanOrEqual(await heightOf(page));
+      });
+    }
+  }
 });

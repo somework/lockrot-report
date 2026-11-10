@@ -5,15 +5,24 @@ import type { View } from "../model/types";
 import { day } from "./format";
 
 export const DATA_AS_OF = "data as of";
+export const AGES_AS_OF = "ages as of";
+export const DATA_AND_AGES_AS_OF = "data and ages as of";
 
 /** Root `data_date` as a day; null means no finding read repository data, so no date is shown. */
 export const dataDay = (dataDate: string | null): string => (dataDate === null ? "—" : day(dataDate));
 
-/** The line every printed page repeats at its top: the project, the data date, the lockrot. */
-export function runningLine(project: string, dataDate: string, toolVersion: string | null): string {
+/** The line every printed page repeats at its top: the project, the data date, the date the ages
+ *  count from (SPEC §7.9.11), the lockrot. */
+export function runningLine(
+  project: string,
+  dataDate: string,
+  agesDate: string,
+  toolVersion: string | null,
+): string {
   return [
     project,
     `${DATA_AS_OF} ${dataDate}`,
+    `${AGES_AS_OF} ${agesDate}`,
     ...(toolVersion !== null ? [`lockrot ${toolVersion}`] : []),
   ].join("  ·  ");
 }

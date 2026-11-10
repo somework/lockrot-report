@@ -650,7 +650,57 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "S2-parent-shared-installed-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "S2-parent-shared-lower-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "S2-prerelease-shared-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "S2-prerelease-shared-older-dagger": {
     "reach": [
       "Production: not in packages-dev",
       "Required directly"
@@ -792,6 +842,23 @@
       "Tripped by pinned"
     ]
   },
+  "S8-higher-parent-dated-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
   "S8-higher-shared-alive-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -854,6 +921,23 @@
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "S8-parent-shared-installed-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
     ]
   },
   "S8-prerelease-installed-dagger": {

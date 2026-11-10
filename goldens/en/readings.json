@@ -190,7 +190,10 @@
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-parent-shared-installed-dagger": [],
   "S2-parent-shared-lower-dagger": [],
+  "S2-prerelease-shared-dagger": [],
+  "S2-prerelease-shared-older-dagger": [],
   "S2-shared-newest-dagger": [],
   "S2-shared-unresolved-dagger": [],
   "S5-parent-after-ga-dagger": [
@@ -238,10 +241,25 @@
     }
   ],
   "S6-snapshot-backport-newer-dagger": [],
+  "S8-higher-parent-dated-dagger": [],
   "S8-higher-shared-alive-dagger": [],
   "S8-higher-shared-untrusted-dagger": [],
   "S8-higher-undated-stale-dagger": [],
   "S8-installed-lower-dated-dagger": [],
+  "S8-parent-shared-installed-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.3 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
   "S8-prerelease-installed-dagger": [
     {
       "flag": "left-behind",
