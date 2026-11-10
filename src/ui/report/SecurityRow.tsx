@@ -16,7 +16,7 @@ import {
 import { toneClass } from "../common/common";
 import { DisclosureButton } from "../common/Disclosure";
 import { usePrinted } from "../print/printContext";
-import { jumpTo, RichText } from "./RichText";
+import { JumpLink, RichText } from "./RichText";
 import { Wbr } from "./PkgName";
 
 const severityTag = (run: Run, severity: string) => (
@@ -125,16 +125,14 @@ function AdvisoryRow({ row, rowId, at, run, withTag, reveal }: RowProps) {
         {sameAs !== null && (
           <span className="d3-adv-same">
             {SECURITY_WORDS.sameAs}
-            <a
-              className="lnk"
-              href={`#${rowId(sameAs.at)}`}
-              onClick={(event) => {
+            <JumpLink
+              to={rowId(sameAs.at)}
+              onJump={() => {
                 reveal(sameAs.at);
-                jumpTo(event, rowId(sameAs.at));
               }}
             >
               {sameAs.id}
-            </a>
+            </JumpLink>
           </span>
         )}
       </div>
@@ -226,17 +224,16 @@ export function SecurityRow2({
                     {group < 0 ? (
                       body
                     ) : (
-                      <a
+                      <JumpLink
+                        to={groupId(group)}
                         className="lnk d3-sev-jump"
-                        href={`#${groupId(group)}`}
-                        aria-label={showGroupName(count, severity)}
-                        onClick={(event) => {
+                        label={showGroupName(count, severity)}
+                        onJump={() => {
                           openGroup(group);
-                          jumpTo(event, groupId(group));
                         }}
                       >
                         {body}
-                      </a>
+                      </JumpLink>
                     )}
                   </li>
                 );

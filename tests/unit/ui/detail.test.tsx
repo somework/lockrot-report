@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, within } from "@testing-library/preact";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { assembleEmbed } from "../../../scripts/report2-embed";
+import { assembleEmbed, report2Pages } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
 import type { Report2Embed } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
@@ -648,5 +648,40 @@ describe("R14-22: a run whose config.lock is false", () => {
     expect(sheet.textContent).toContain(
       "if Composer resolves it (not checked: config.lock is false, so Composer ignores composer.lock)",
     );
+  });
+});
+
+describe("the jumps inside the sheet", () => {
+  function openDrupalCore(): HTMLElement {
+    const page = report2Pages().find(({ name }) => name === "report2-page-drupal-site");
+    if (page === undefined) throw new Error("no drupal-site page");
+    history.replaceState(null, "", `/report.html#pkg=${encodeURIComponent("drupal/core")}`);
+    render(<App model={modelOf(page.embed)} />);
+    const sheet = document.querySelector<HTMLElement>('[data-surface="detail"]');
+    if (sheet === null) throw new Error("no detail sheet");
+    return sheet;
+  }
+
+  const jumps = (sheet: HTMLElement): HTMLAnchorElement[] => [
+    ...sheet.querySelectorAll<HTMLAnchorElement>("a[data-jump]"),
+  ];
+
+  test("link to the open package, so a copied or new-tab jump opens the same sheet", () => {
+    const sheet = openDrupalCore();
+
+    const hrefs = new Set(jumps(sheet).map((a) => a.getAttribute("href")));
+
+    expect(jumps(sheet).length).toBeGreaterThan(2);
+    expect([...hrefs]).toEqual(["#view=findings&pkg=drupal%2Fcore"]);
+  });
+
+  test("leave a click with a modifier key to the browser", () => {
+    const sheet = openDrupalCore();
+    const [first] = jumps(sheet);
+    if (first === undefined) throw new Error("no jump in the drupal/core sheet");
+
+    const notPrevented = fireEvent.click(first, { ctrlKey: true });
+
+    expect(notPrevented).toBe(true);
   });
 });
