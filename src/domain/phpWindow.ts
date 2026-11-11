@@ -240,11 +240,13 @@ function packagesClause(fix: TargetFix, target: string): string {
 function lockPlatformClause(fix: TargetFix, target: string, answers: boolean): string {
   const links = joinAnd([...new Set(fix.lock_platform.map((l) => reqWords(l)))]);
   const records = `the lock records ${links}, which composer.json does not have`;
-  const command = fix.command === null ? "" : commandLine(fix.command, "posix");
   if (fix.check === "resolves") {
-    const step =
-      answers && fix.platform_step ? `set config.platform.php to your PHP ${target} release, then ` : "";
-    return `${records}: ${step}${command} rewrites it`;
+    const stepped = answers && fix.platform_step;
+    const step = stepped ? `set config.platform.php to your PHP ${target} release, then ` : "";
+    const command = fix.command === null ? null : commandLine(fix.command, "posix");
+    if (command !== null) return `${records}: ${step}${command} rewrites it`;
+    const solver = stepped ? `${step}Composer's solver` : `Composer's solver at PHP ${target}`;
+    return `${records}, and ${solver} resolves the update that rewrites it${unprintedTail(fix)}`;
   }
   if (!answers) return records;
   if (fix.check === "refused") {
@@ -253,6 +255,17 @@ function lockPlatformClause(fix: TargetFix, target: string, answers: boolean): s
   }
   return `${records}, and the update that rewrites it is not checked (${reasonWords(fix)})`;
 }
+
+/** SPEC §5.6: an argv that fails the argument rule is named as refused, never printed. */
+const unprintedTail = (fix: TargetFix): string =>
+  fix.command === null ? "" : ", and its command holds characters the page does not print";
+
+const resolvesWords = (lead: string, fix: TargetFix): string => {
+  const command = fix.command === null ? null : commandLine(fix.command, "posix");
+  return command === null
+    ? `${lead} resolves this update${unprintedTail(fix)}`
+    : `${lead} resolves this update: ${command}`;
+};
 
 const reasonWords = (fix: TargetFix): string =>
   fix.reason === null ? "the run checked no move" : plain(checkReasonRich(fix.reason));
@@ -277,14 +290,16 @@ function answerClauses(fix: TargetFix, target: string, named: string): string[] 
     return [`your target, ${named}, is excluded, and only a change to ${links} can admit it`];
   }
   const solver = `Composer's solver at PHP ${target}`;
-  const command = fix.command === null ? null : commandLine(fix.command, "posix");
   switch (fix.check) {
     case "resolves":
       return [
         packagesClause(fix, target),
-        fix.platform_step
-          ? `set config.platform.php to your PHP ${target} release, then Composer's solver resolves this update: ${command ?? ""}`
-          : `${solver} resolves this update: ${command ?? ""}`,
+        resolvesWords(
+          fix.platform_step
+            ? `set config.platform.php to your PHP ${target} release, then Composer's solver`
+            : solver,
+          fix,
+        ),
       ];
     case "refused": {
       const their = packageNames(fix).length === 1 ? "its" : "their";

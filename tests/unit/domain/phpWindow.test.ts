@@ -759,3 +759,64 @@ describe("the edge setter line (G157)", () => {
     expect(lines({ with_dev: null }, { include_dev: true })("acme/clock")).toHaveLength(2);
   });
 });
+
+describe("a resolving target_fix whose command the page does not print (SPEC §5.6)", () => {
+  const unprintable = ["composer", "update", "acme/core;calc"];
+  const recorded = [req({ name: null, version: null, constraint: ">=7.4 <8.1" })];
+
+  test("says so in place of the command, leaving no empty slot after the solver's answer", () => {
+    expect(
+      phpStateClauses(report({ target_fix: fix({ check: "resolves", command: unprintable }) }))?.at(-1),
+    ).toBe(
+      "Composer's solver at PHP 8.4 resolves this update, and its command holds characters the page does not print",
+    );
+  });
+
+  test("ends the answer after the update when a resolving fix has no command", () => {
+    expect(phpStateClauses(report({ target_fix: fix({ check: "resolves", command: null }) }))?.at(-1)).toBe(
+      "Composer's solver at PHP 8.4 resolves this update",
+    );
+  });
+
+  test("names the solver in the lock_platform clause in place of an unprintable command", () => {
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({ packages: [], lock_platform: recorded, check: "resolves", command: unprintable }),
+        }),
+      )?.[1],
+    ).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have, and Composer's solver at PHP 8.4 resolves the update that rewrites it, and its command holds characters the page does not print",
+    );
+  });
+
+  test("keeps the platform step in the lock_platform clause when the command is unprintable", () => {
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({
+            packages: [],
+            lock_platform: recorded,
+            check: "resolves",
+            command: unprintable,
+            platform_step: true,
+          }),
+        }),
+      )?.[1],
+    ).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have, and set config.platform.php to your PHP 8.4 release, then Composer's solver resolves the update that rewrites it, and its command holds characters the page does not print",
+    );
+  });
+
+  test("ends the lock_platform clause after the update when a resolving fix has no command", () => {
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({ packages: [], lock_platform: recorded, check: "resolves", command: null }),
+        }),
+      )?.[1],
+    ).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have, and Composer's solver at PHP 8.4 resolves the update that rewrites it",
+    );
+  });
+});
