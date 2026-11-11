@@ -16,6 +16,12 @@
   display: none !important;
 }
 
+/* A lock or registry string can hold right-to-left text: each inline element is its own bidi run,
+   so the string cannot reorder the words beside it. */
+:where(span, a, b, i, em, strong, code, small, abbr, time, mark, kbd, label) {
+  unicode-bidi: isolate;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;

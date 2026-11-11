@@ -7,6 +7,7 @@
 import type { Model, NormalizeError } from "./types";
 import { REPORT2_KEYS, type Details, type Report2 } from "./report";
 import { READS_SCHEMAS } from "../schema";
+import { visibleData } from "./visibleControls";
 
 export type NormalizeResult = { ok: true; model: Model } | { ok: false; error: NormalizeError };
 
@@ -49,8 +50,8 @@ export function normalize(input: unknown): NormalizeResult {
   return {
     ok: true,
     model: {
-      report: shape.reportSource as Report2,
-      details: (isRecord(shape.detailsSource) ? shape.detailsSource : {}) as Details,
+      report: visibleData(shape.reportSource) as Report2,
+      details: visibleData(isRecord(shape.detailsSource) ? shape.detailsSource : {}) as Details,
       schema,
       newerSchema: schema > Math.max(...READS_SCHEMAS),
     },

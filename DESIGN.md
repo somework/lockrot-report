@@ -89,6 +89,11 @@ must either keep that markup free of inline style/script or replace the meta pol
 - report-2 is typed by lockrot's TypeScript contract, as lockrot writes it: every key required.
   `normalize.ts` keeps the document as `Model.report`, with its `details`, and every surface reads
   that model alone.
+  Lock and registry strings can hold bidi controls and default-ignorable characters, which make a
+  version or a replacement read as something else. `normalize.ts` writes each of them, in every
+  string and key, as a `\u{…}` escape, as lockrot's text formats do (`model/visibleControls.ts`).
+  `styles/base.css` makes every inline element its own bidi run (`unicode-bidi: isolate`), so
+  right-to-left text in one string cannot reorder the words beside it.
   A document without a root key report-2 requires (`REPORT2_KEYS`) is a `malformed-report` error
   that names the keys. The html embed's `details` has no report-2 type. The model types it from
   explain-2's `lock` and `repositoryMetadata`, plus `repository_link`, which no schema defines.
@@ -118,6 +123,7 @@ src/
     report.ts             lockrot's report-2 contract types, `REPORT2_KEYS`, the `details` types, guards
     types.ts              Model (the report-2 embed and its schema), the views, NormalizeError
     normalize.ts          unknown → Model | NormalizeError
+    visibleControls.ts    bidi and default-ignorable characters as visible escapes
   domain/                 pure functions, no DOM, no Preact; unit-tested
     vocab.ts              signals (S1–S11), grade tones, definitions, doc links
     format.ts             day, ageText, plural, count phrases; `decimal`, the one number formatter (a tie rounds to even)

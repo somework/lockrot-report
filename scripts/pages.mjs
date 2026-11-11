@@ -9,7 +9,14 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { payload } from "./payload.mjs";
-import { assembleEmbed, LONG_VERSION, METACHAR_NAME, report2Pages, sheetPages } from "./report2-embed.ts";
+import {
+  assembleEmbed,
+  BIDI_VERSION,
+  LONG_VERSION,
+  METACHAR_NAME,
+  report2Pages,
+  sheetPages,
+} from "./report2-embed.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIST = join(ROOT, "dist");
@@ -66,6 +73,16 @@ function main() {
     .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DATA}}", () => payload(long));
   writeFileSync(join(OUT, "planted", "report2-long-version.html"), longPage);
+  // The composite with one graded package on a version that holds bidi controls.
+  const bidi = assembleEmbed("composite");
+  bidi.report.findings = bidi.report.findings.map((f) =>
+    f.package === "symfony/yaml" ? { ...f, version: BIDI_VERSION } : f,
+  );
+  const bidiPage = template
+    .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DATA}}", () => payload(bidi));
+  writeFileSync(join(OUT, "planted", "report2-bidi.html"), bidiPage);
   // The composite read from cached repository data, so its data date is older than its run.
   const older = assembleEmbed("composite");
   older.report.data_date = "2026-09-24T08:00:00+00:00";
@@ -80,7 +97,7 @@ function main() {
     .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DATA}}", () => payload(JSON.parse(read(REPORT1))));
   writeFileSync(join(OUT, "planted", "report1.html"), report1);
-  console.log(`${report2.length + 5} page(s) written to ${OUT}`);
+  console.log(`${report2.length + 6} page(s) written to ${OUT}`);
 }
 
 main();

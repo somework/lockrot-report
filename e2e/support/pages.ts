@@ -52,6 +52,8 @@ export const FIXTURES = {
   metacharReport2: "planted/report2-metachar",
   /** Planted: the composite with symfony/yaml on `LONG_VERSION`, a 45-character branch version. */
   longVersionReport2: "planted/report2-long-version",
+  /** Planted: the composite with symfony/yaml on `BIDI_VERSION`, a version with bidi controls. */
+  bidiReport2: "planted/report2-bidi",
   /** Planted: the composite whose data date is a week older than the day it was generated. */
   olderDataReport2: "planted/report2-older-data",
   /** Planted: a report-1 document (`fixtures/bundles/mini.json`), which the page answers with the

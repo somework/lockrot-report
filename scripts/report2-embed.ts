@@ -36,6 +36,10 @@ export const METACHAR_NAME = `acme/q"u]o[te\\'<x>`;
 /** A branch version as long as one a real lock held, for the planted `report2-long-version` page. */
 export const LONG_VERSION = "dev-41542-extra-property-definition-endpoints";
 
+/** A version with a right-to-left override, which would read "dev-main 1.0.0", for the planted
+ *  `report2-bidi` page. */
+export const BIDI_VERSION = "dev-main\u202E0.0.1 \u202C";
+
 /** The corpus slice: the composite, the offline cases and the baselined embeds (by page case name). */
 export function isCorpusSlice(caseName: string): boolean {
   return caseName === "composite" || caseName.includes("offline") || caseName.startsWith("baselined-");
