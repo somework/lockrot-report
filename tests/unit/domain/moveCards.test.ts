@@ -271,6 +271,20 @@ describe("R14-22: the check line when config.lock is false", () => {
   });
 });
 
+describe("R17-Q2: the check line when the solve reaches no release", () => {
+  test("reads the reason words alone, because the solver ran", () => {
+    const { finding, run } = modelCase("holder-vuln-dagger");
+    const move = finding.next_step;
+    if (move === null) throw new Error("holder-vuln‡ has a move");
+    const unchecked = {
+      ...move,
+      check: { result: "not_checked", form: null, reason: "installs_no_release", installs: "dev-main" },
+    } as typeof move;
+
+    expect(plain(checkLine(unchecked, run) ?? [])).toBe("Composer's solver does not reach the release");
+  });
+});
+
 describe("OWN, G118: a hold by its own release", () => {
   test("names that release, with its link words and no grade, flags or own step (wallabag 7.4's symfony/mailer)", () => {
     const { finding, run } = modelCase("holder-vuln-dagger");

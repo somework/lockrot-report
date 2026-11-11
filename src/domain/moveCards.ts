@@ -312,8 +312,11 @@ function composerNotes(finding: Finding, move: AnyMove, run: Run, noted: readonl
         note(["The packages that hold it may need to move too"]);
         break;
       case "crosses_major": {
-        // A move that Composer's solver checked, resolved or refused, drops the clause, as `next_step.text` does.
-        const solved = move.check?.result === "resolves" || move.check?.result === "refused";
+        // A move that Composer's solver ran on drops the clause, as `next_step.text` does (ruling R17-Q2).
+        const solved =
+          move.check?.result === "resolves" ||
+          move.check?.result === "refused" ||
+          move.check?.reason === "installs_no_release";
         note([
           `${newLineWords(move.to_branch)} brings its own requirements${solved ? "" : ", which lockrot does not solve"}`,
         ]);
@@ -429,6 +432,8 @@ export function checkLine(move: AnyMove, run: Run): Rich | null {
     case "refused":
       return ["Composer refuses the move"];
     default:
+      // The solver ran, so the line drops "if Composer resolves it" (ruling R17-Q2).
+      if (check.reason === "installs_no_release") return checkReasonRich(check.reason);
       return [
         `${RESOLVES_CAVEAT} (not checked: `,
         ...(check.reason === "baseline_refused"

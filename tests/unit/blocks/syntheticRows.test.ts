@@ -370,6 +370,10 @@ describe("G106: the new-major note and the move check", () => {
   test.each([
     ["resolves", { result: "resolves", form: "inline", reason: null, installs: null }],
     ["refused", { result: "refused", form: null, reason: null, installs: null }],
+    [
+      "does not reach a release (ruling R17-Q2)",
+      { result: "not_checked", form: null, reason: "installs_no_release", installs: "dev-master" },
+    ],
   ])("drops the clause when the check %s", (_, check) => {
     expect(noteOf(check)).toContain("A new major brings its own requirements");
   });
