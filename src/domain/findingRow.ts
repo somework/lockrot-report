@@ -292,10 +292,11 @@ export const rowBlockedWords = (f: Finding, run: Run): string | null =>
 function blockedWords(step: Move, run: Run): string {
   if (step.source === "pinned") return `no tag runs on ${run.target_php}`;
   const requires = step.php_check?.requires ?? null;
-  const subject = phpSubject(step) ?? "a fixing release";
+  const kind = step.fix_kind === null ? "newer" : "fixing";
+  const subject = phpSubject(step) ?? `a ${kind} release`;
   return requires === null
     ? `${subject} does not run on ${run.target_php}`
-    : `${subject} needs php ${requires}; target ${run.target_php} runs no ${step.fix_kind === null ? "newer" : "fixing"} release`;
+    : `${subject} needs php ${requires}; target ${run.target_php} runs no ${kind} release`;
 }
 
 function kindWords(f: Finding, step: Move, run: Run): string {

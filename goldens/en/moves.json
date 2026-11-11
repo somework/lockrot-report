@@ -1320,6 +1320,24 @@
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-parent-prerelease-undated-dagger": [
+    {
+      "heading": "Next step",
+      "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": []
+    }
+  ],
   "S2-parent-shared-installed-dagger": [
     {
       "heading": "Next step",
@@ -3134,6 +3152,70 @@
       },
       "after": {
         "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "date-tag-above-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v3.3.3 on 3.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update prestashop/ps_contactinfo",
+        "composer why-not prestashop/ps_contactinfo v3.3.3 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "3.x needs php >=5.4",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "date-tag-snapshot-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, 3.14.0; that tag is older than your snapshot: review it first, or replace the package",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'matomo/searchengine-and-social-list:^3.14.0'",
+        "composer why-not matomo/searchengine-and-social-list 3.14.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": "stale",
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": {
+        "result": "8, medium",
         "conditions": [
           "if Composer resolves it (not checked: the run checked no move)"
         ]
@@ -5142,6 +5224,43 @@
       ]
     }
   ],
+  "mc-non-dev-solve-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^6.4.41, which removes it from require-dev",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/routing:^6.4.41' --no-interaction"
+      ],
+      "commands_label": "Command",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "6.x needs php >=8.1",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "mc-package-hold-dagger": [
     {
       "heading": "The move",
@@ -5342,6 +5461,43 @@
           "items": []
         }
       ]
+    }
+  ],
+  "mc-root-alias-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v6.4.41 on 6.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'symfony/routing:^6.4.41'"
+      ],
+      "commands_label": "Command",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "6.x needs php >=8.1",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
     }
   ],
   "mc-root-hold-dagger": [

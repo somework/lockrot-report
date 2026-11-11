@@ -324,6 +324,9 @@
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-parent-prerelease-undated-dagger": [
+    null
+  ],
   "S2-parent-shared-installed-dagger": [
     null
   ],
@@ -556,6 +559,12 @@
     null
   ],
   "commonmark": [
+    null
+  ],
+  "date-tag-above-dagger": [
+    null
+  ],
+  "date-tag-snapshot-dagger": [
     null
   ],
   "either-critical-dagger": [
@@ -946,6 +955,20 @@
       "fold": null
     }
   ],
+  "mc-non-dev-solve-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires >=6.4.0,<6.4.41",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "mc-package-hold-dagger": [
     {
       "count": 2,
@@ -1005,6 +1028,9 @@
       ],
       "fold": null
     }
+  ],
+  "mc-root-alias-dagger": [
+    null
   ],
   "mc-root-hold-dagger": [
     null

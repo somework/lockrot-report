@@ -30,7 +30,6 @@ import { useReport } from "../context";
 import { LIST_HEAD_H, useMeasuredHeight } from "../useMeasuredHeight";
 import { RowHint, RowHintContext, toneClass, useRowDescription } from "../common/common";
 import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
-import { CleanMark } from "../ledger/CleanMark";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { usePrinted } from "../print/printContext";
@@ -260,8 +259,8 @@ function Group({ group, run, first }: { group: AdvisoryGroup2; run: Run; first: 
   );
 }
 
-/** `marked` draws the clean mark, which on screen the Security block above already carries. */
-function NoAdvisories2({ marked }: { marked: boolean }) {
+/** The clean mark is the Security block's, on screen above this line and on paper in the summary. */
+function NoAdvisories2() {
   const { report } = useReport2();
   const line = noAdvisoryLine(report);
   const mark = advisoryCheckMark(report);
@@ -276,7 +275,6 @@ function NoAdvisories2({ marked }: { marked: boolean }) {
   return (
     <div className="empty al-empty">
       <p className={`al-answer al-clean ${toneClass("none")}`}>
-        {marked && <CleanMark size={20} />}
         <span>{line}</span>
       </p>
     </div>
@@ -338,7 +336,7 @@ export function AdvisoriesView2() {
             <SecurityBlock report={report} />
           </div>
         )}
-        <NoAdvisories2 marked={printed} />
+        <NoAdvisories2 />
       </section>
     );
 

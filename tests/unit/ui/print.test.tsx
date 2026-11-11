@@ -266,6 +266,16 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     expect(doc.querySelector(".pd-intro-note")).toBeNull();
   });
 
+  it("draws the clean mark of a clean lock in the printed summary only, not in the Advisories section", () => {
+    const { container } = render(<App model={load("C")} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const doc = printDoc(container);
+    expect(doc.querySelector(".pd-summary .clean-mark")).not.toBeNull();
+    expect(doc.querySelector(".pd-advisories .clean-mark")).toBeNull();
+  });
+
   it("prints a Blast radius line for a lock with nothing flagged, as Findings and Advisories do", () => {
     const { container } = render(<App model={load("ok-unchecked")} />);
 

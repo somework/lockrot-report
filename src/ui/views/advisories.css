@@ -55,8 +55,7 @@
   -webkit-print-color-adjust: exact;
 }
 
-/* No advisory at all: the tab's empty box, holding PD-LEDGER-1's sentence — with the band's
-   all-clear mark only when the check ran for every package. */
+/* No advisory at all: the tab's empty box, holding PD-LEDGER-1's sentence. */
 .al-empty {
   display: flex;
   flex-direction: column;

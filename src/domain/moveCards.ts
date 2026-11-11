@@ -564,9 +564,10 @@ function holderItem(held: HeldBy, run: Run, finding: Finding): Holder {
   };
 }
 
-function foldWord(held: HeldBy, run: Run, own: string): string {
+/** The fold counts own holds, not releases, so its parts add up to its total (G121). */
+function foldWord(held: HeldBy, run: Run, own: string, ownWord: string): string {
   if (held.source === "root") return "in composer.json";
-  if (held.package === own) return "of its own releases";
+  if (held.package === own) return ownWord;
   const holder = held.holder ?? null;
   if (holder === null) return "at a release other than its locked one";
   if (isGradedHolder(held, run)) return `graded ${holder.verdict}`;
@@ -574,9 +575,11 @@ function foldWord(held: HeldBy, run: Run, own: string): string {
 }
 
 function foldWords(rest: readonly HeldBy[], run: Run, own: string): string {
+  const ownVersions = new Set(rest.filter((held) => held.package === own).map((held) => held.version));
+  const ownWord = ownVersions.size > 1 ? "through its own releases" : "through its own release";
   const counts = new Map<string, number>();
   for (const held of rest) {
-    const word = foldWord(held, run, own);
+    const word = foldWord(held, run, own, ownWord);
     counts.set(word, (counts.get(word) ?? 0) + 1);
   }
   if (counts.size === 1 && counts.has("with nothing flagged"))

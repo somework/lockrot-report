@@ -89,6 +89,12 @@ must either keep that markup free of inline style/script or replace the meta pol
 - report-2 is typed by lockrot's TypeScript contract, as lockrot writes it: every key required.
   `normalize.ts` keeps the document as `Model.report`, with its `details`, and every surface reads
   that model alone.
+  Lock and registry strings can hold bidi controls and default-ignorable characters, which make a
+  version or a replacement read as something else. `normalize.ts` writes each of them, in every
+  string and key, as a `\u{…}` escape, as lockrot's text formats do (`model/visibleControls.ts`).
+  `styles/base.css` makes every inline element its own bidi run (`unicode-bidi: isolate`), so a
+  value that has an element of its own, such as a version cell, cannot reorder the words beside it.
+  A value written into a sentence shares that sentence's text node and is not isolated from it.
   A document without a root key report-2 requires (`REPORT2_KEYS`) is a `malformed-report` error
   that names the keys. The html embed's `details` has no report-2 type. The model types it from
   explain-2's `lock` and `repositoryMetadata`, plus `repository_link`, which no schema defines.
@@ -118,6 +124,7 @@ src/
     report.ts             lockrot's report-2 contract types, `REPORT2_KEYS`, the `details` types, guards
     types.ts              Model (the report-2 embed and its schema), the views, NormalizeError
     normalize.ts          unknown → Model | NormalizeError
+    visibleControls.ts    bidi and default-ignorable characters as visible escapes
   domain/                 pure functions, no DOM, no Preact; unit-tested
     vocab.ts              signals (S1–S11), grade tones, definitions, doc links
     format.ts             day, ageText, plural, count phrases; `decimal`, the one number formatter (a tie rounds to even)
@@ -685,6 +692,11 @@ segment shows its role by its border's style (PD-SCORE-3). `e2e/forced-colors.sp
   `inert` while it is up: Tab stays in the sheet. `j`/`k` still walk the list under it, re-focusing
   the heading so it is announced; Escape and Close hand focus to the row reached; `/` closes the
   sheet on its way to the search box. A `#pkg=` sheet on load leaves focus alone (PD-ROWS-12).
+- From 1000px the package opens beside the list and focus stays on the row, so a change of
+  `aria-current` is the only change on the focused element, which many screen readers do not
+  announce. A reader's own open there (click, Enter, `j`/`k`) puts "{package} opened beside the list"
+  in a polite live region (`.open-note`). Any other state change empties it, so the next open is
+  announced again. A sheet announces itself through its focused heading, so the region stays empty.
 - Roving tabindex (`ui/rowCursor.ts`, PD-ROWS-11): one row of the list has `tabindex="0"` — the open
   package's, else the one last opened, else the first — every other row `-1`, and the links inside
   a row are `-1` except on that row. Tab reaches the list once, then that row's links, then the

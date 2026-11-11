@@ -4051,6 +4051,20 @@
     "ignored": [],
     "ladder": []
   },
+  "S2-parent-prerelease-undated-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "S2-parent-shared-installed-dagger": {
     "summary": [
       "no counted advisory",
@@ -5855,6 +5869,61 @@
         ]
       }
     ]
+  },
+  "date-tag-above-dagger": {
+    "summary": [
+      "1 medium advisory",
+      "1 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v3.3.2."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2025-24027",
+        "source": "PKSA-53np-yyc5-xg1m",
+        "deciding": true,
+        "severity": "medium",
+        "fix": "fix v3.3.3 on 3.x, your branch (composer update)",
+        "affects": "affects <=3.3.2",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "3.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "3.x your branch the move clears 1 of 1 from v3.3.3",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "date-tag-snapshot-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
   },
   "either-critical-dagger": {
     "summary": [
@@ -8710,6 +8779,47 @@
       }
     ]
   },
+  "mc-non-dev-solve-dagger": {
+    "summary": [
+      "1 high advisory",
+      "4 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.28."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48784",
+        "source": "PKSA-bf7t-jnpz-492k",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.41 on 6.x, your branch (upgrade)",
+        "affects": "affects >=6.4.0,<6.4.41",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.41",
+          "upgrade · held by composer.json",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
   "mc-package-hold-dagger": {
     "summary": [
       "1 high advisory",
@@ -8920,6 +9030,47 @@
         "lines": [
           "8.x the move clears 1 of 1 from 8.0.1",
           "upgrade · held by composer.json",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-root-alias-dagger": {
+    "summary": [
+      "1 high advisory",
+      "4 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.28."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48784",
+        "source": "PKSA-bf7t-jnpz-492k",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.41 on 6.x, your branch (composer update)",
+        "affects": "affects >=6.4.0,<6.4.41",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.41",
+          "composer update",
           "after it: 0, ok"
         ]
       }

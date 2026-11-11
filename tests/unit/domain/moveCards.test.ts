@@ -120,7 +120,7 @@ describe("G121 and §7.9.13: holds by its own release", () => {
     const fold = moveCards(finding, run)[0]?.heldBy?.fold;
 
     expect(fold?.summary).toBe(
-      "5 more: 1 in composer.json, 2 of its own releases, 1 graded critical and 1 graded high",
+      "5 more: 1 in composer.json, 2 through its own release, 1 graded critical and 1 graded high",
     );
     expect(fold?.holders.map(holderName)).toEqual([
       "your composer.json",
@@ -129,6 +129,46 @@ describe("G121 and §7.9.13: holds by its own release", () => {
       "symfony/http-foundation v4.4.49",
       "scheb/2fa-bundle v5.13.2",
     ]);
+  });
+});
+
+describe("G121: own holds in the fold count holds, and name one release or several", () => {
+  const own = (pkg: string, version: string, target: string): HeldBy => ({
+    source: "package",
+    package: pkg,
+    version,
+    link: "require",
+    target,
+    constraint: "^1",
+    holder: null,
+  });
+
+  test("reads through its own release when every own hold in the fold names one version (wallabag 7.4's symfony/framework-bundle)", () => {
+    const { finding, run } = modelCase("holder-vuln-dagger");
+    if (finding.next_step === null) throw new Error("holder-vuln‡ has a move");
+    finding.next_step.held_by = [
+      root(null, "^4.4.49", "require"),
+      root("symfony/mime", "^4.4.47"),
+      root("symfony/yaml", "^4.4.45"),
+      ...["a/one", "a/two", "a/three"].map((target) => own(finding.package, "v5.4.4", target)),
+    ];
+
+    expect(moveCards(finding, run)[0]?.heldBy?.fold?.summary).toBe("3 more: 3 through its own release");
+  });
+
+  test("reads through its own releases when the own holds in the fold name two versions (symfony/security-bundle)", () => {
+    const { finding, run } = modelCase("holder-vuln-dagger");
+    if (finding.next_step === null) throw new Error("holder-vuln‡ has a move");
+    finding.next_step.held_by = [
+      root(null, "^4.4.49", "require"),
+      root("symfony/mime", "^4.4.47"),
+      root("symfony/yaml", "^4.4.45"),
+      own(finding.package, "v5.4.20", "a/one"),
+      own(finding.package, "v5.4.45", "a/two"),
+      own(finding.package, "v5.4.45", "a/three"),
+    ];
+
+    expect(moveCards(finding, run)[0]?.heldBy?.fold?.summary).toBe("3 more: 3 through its own releases");
   });
 });
 

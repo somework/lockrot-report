@@ -11,6 +11,9 @@ export default defineConfig({
     environment: "happy-dom",
     include: ["tests/unit/**/*.test.{ts,tsx}", "tests/build/**/*.test.ts"],
     css: false,
+    // A test that reads lockrot's recorded cases parses the whole bundle, so under coverage on a
+    // loaded runner the 5000 ms default fails it by time alone.
+    testTimeout: 30_000,
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],

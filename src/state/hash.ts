@@ -11,6 +11,7 @@ import type { FilterGroup, Filters, LinkTarget, State } from "./types";
 import { EMPTY_FILTERS, FILTER_GROUPS, INITIAL_STATE } from "./types";
 import { VIEWS } from "../model/types";
 import type { View } from "../model/types";
+import { visibleControls } from "../model/visibleControls";
 
 const FILTER_GROUP_SET = new Set<string>(FILTER_GROUPS);
 const VIEW_SET = new Set<string>(VIEWS);
@@ -115,7 +116,7 @@ export function parseHash(fragment: string, base: State): State {
     if (key === "q" || key === "pkg" || isFilterGroup(key)) listKey = true;
     let value: string;
     try {
-      value = decodeURIComponent(piece.slice(i + 1));
+      value = visibleControls(decodeURIComponent(piece.slice(i + 1)));
     } catch {
       continue;
     }

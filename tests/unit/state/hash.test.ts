@@ -538,3 +538,18 @@ describe("the section key: a section of Run data that the address opens at (R4-2
     ).toBeNull();
   });
 });
+
+describe("parseHash shows bidi controls in an address as the model does", () => {
+  it("escapes a control in pkg and q, so the name matches the escaped name in the model", () => {
+    const state = parseHash("#pkg=acme%2F%E2%80%AEevil&q=%E2%80%AEx", INITIAL_STATE);
+
+    expect(state.pkg).toBe("acme/\\u{202E}evil");
+    expect(state.q).toBe("\\u{202E}x");
+  });
+
+  it("reads back an address it wrote for an escaped name unchanged", () => {
+    const state = { ...INITIAL_STATE, view: "findings" as const, pkg: "acme/\\u{202E}evil" };
+
+    expect(parseHash(serializeHash(state), INITIAL_STATE).pkg).toBe("acme/\\u{202E}evil");
+  });
+});
