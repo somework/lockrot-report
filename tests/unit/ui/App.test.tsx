@@ -983,7 +983,7 @@ describe("layout", () => {
   });
 
   test("the header of an empty lock names only the ages date (SPEC §7.9.3, R16-9b)", () => {
-    // The model's empty-lock page: packages_checked 0, data_date null, generated 2026-10-01.
+    // The model's empty-lock page: no package, so no data date.
     const path = join(
       process.cwd(),
       ".lockrot/tests/fixtures/schema/documents/page/empty-lock.offline-dagger.json",

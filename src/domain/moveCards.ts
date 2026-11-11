@@ -564,7 +564,7 @@ function holderItem(held: HeldBy, run: Run, finding: Finding): Holder {
   };
 }
 
-/** `ownWord` counts holds, so the parts add up to the fold's total (G121). */
+/** The fold counts own holds, not releases, so its parts add up to its total (G121). */
 function foldWord(held: HeldBy, run: Run, own: string, ownWord: string): string {
   if (held.source === "root") return "in composer.json";
   if (held.package === own) return ownWord;

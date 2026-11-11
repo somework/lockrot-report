@@ -245,8 +245,11 @@ function lockPlatformClause(fix: TargetFix, target: string, answers: boolean): s
     const step = stepped ? `set config.platform.php to your PHP ${target} release, then ` : "";
     const command = fix.command === null ? null : commandLine(fix.command, "posix");
     if (command !== null) return `${records}: ${step}${command} rewrites it`;
-    const solver = stepped ? `${step}Composer's solver` : `Composer's solver at PHP ${target}`;
-    return `${records}, and ${solver} resolves the update that rewrites it${unprintedTail(fix)}`;
+    // Not the answer: the clause before it already names the update and its command.
+    if (!answers) return `${records}, and that update rewrites it`;
+    const rewrites = `resolves the update that rewrites it${unprintedTail(fix)}`;
+    if (stepped) return `${records}: ${step}Composer's solver ${rewrites}`;
+    return `${records}, and Composer's solver at PHP ${target} ${rewrites}`;
   }
   if (!answers) return records;
   if (fix.check === "refused") {

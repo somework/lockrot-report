@@ -10,6 +10,9 @@ test("a version with bidi controls shows them as escapes in an isolated run", as
   const version = page.locator('[role="row"][data-pkg="symfony/yaml"] .fc-ver');
 
   await expect(version).toHaveText("dev-main\\u{202E}0.0.1 \\u{202C}");
-  expect(await page.locator("main").evaluate((el) => /[‪-‮⁦-⁩]/.test(el.textContent))).toBe(false);
+  const hidden = await page.evaluate(() =>
+    /[\p{Bidi_Control}\p{Default_Ignorable_Code_Point}]/u.test(document.body.textContent),
+  );
+  expect(hidden).toBe(false);
   expect(await version.evaluate((el) => getComputedStyle(el).unicodeBidi)).toBe("isolate");
 });

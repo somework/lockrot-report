@@ -7,7 +7,7 @@
 import type { Model, NormalizeError } from "./types";
 import { REPORT2_KEYS, type Details, type Report2 } from "./report";
 import { READS_SCHEMAS } from "../schema";
-import { visibleData } from "./visibleControls";
+import { visibleControls, visibleData } from "./visibleControls";
 
 export type NormalizeResult = { ok: true; model: Model } | { ok: false; error: NormalizeError };
 
@@ -29,7 +29,7 @@ export function normalize(input: unknown): NormalizeResult {
   const lockrot = isRecord(shape.reportSource.lockrot) ? shape.reportSource.lockrot : {};
   const schema = typeof lockrot.schema === "number" && Number.isFinite(lockrot.schema) ? lockrot.schema : 1;
   if (schema < Math.min(...READS_SCHEMAS)) {
-    const version = typeof lockrot.version === "string" ? lockrot.version : null;
+    const version = typeof lockrot.version === "string" ? visibleControls(lockrot.version) : null;
     return { ok: false, error: { kind: "report-1", message: REPORT1_MESSAGE, version } };
   }
 

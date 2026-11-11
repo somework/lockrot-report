@@ -36,8 +36,12 @@ test("Escape empties the announcement, so opening the same package again is anno
   await expect(announcement(page)).toHaveText("twig/twig opened beside the list");
 
   await page.keyboard.press("Escape");
-
   await expect(announcement(page)).toHaveText("");
+
+  await row.focus();
+  await page.keyboard.press("Enter");
+
+  await expect(announcement(page)).toHaveText("twig/twig opened beside the list");
 });
 
 test("below 1000 px the sheet's heading takes focus and no live region repeats it", async ({ page }) => {

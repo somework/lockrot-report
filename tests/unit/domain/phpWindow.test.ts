@@ -804,8 +804,19 @@ describe("a resolving target_fix whose command the page does not print (SPEC §5
         }),
       )?.[1],
     ).toBe(
-      "the lock records require.php >=7.4 <8.1, which composer.json does not have, and set config.platform.php to your PHP 8.4 release, then Composer's solver resolves the update that rewrites it, and its command holds characters the page does not print",
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have: set config.platform.php to your PHP 8.4 release, then Composer's solver resolves the update that rewrites it, and its command holds characters the page does not print",
     );
+  });
+
+  test("names the refused command once when a package excludes the target beside the lock_platform link", () => {
+    expect(
+      phpStateClauses(
+        report({ target_fix: fix({ lock_platform: recorded, check: "resolves", command: unprintable }) }),
+      )?.slice(-2),
+    ).toEqual([
+      "Composer's solver at PHP 8.4 resolves this update, and its command holds characters the page does not print",
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have, and that update rewrites it",
+    ]);
   });
 
   test("ends the lock_platform clause after the update when a resolving fix has no command", () => {
