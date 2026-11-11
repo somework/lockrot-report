@@ -563,6 +563,20 @@
       "value": "most recent not read (undated releases)"
     }
   ],
+  "S2-parent-prerelease-undated-dagger": [
+    {
+      "label": "installed",
+      "value": "2.1.1 · 2023-06-02 · 3.3 years ago, dated by akaunting/monorepo · the newest on 2.x"
+    },
+    {
+      "label": "last push",
+      "value": "2023-06-02 · 3.3 years ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
   "S2-parent-shared-installed-dagger": [
     {
       "label": "installed",
@@ -1351,6 +1365,34 @@
     {
       "label": "last push",
       "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "date-tag-above-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.3.2 · 2023-03-09 · 3.6 years ago"
+    },
+    {
+      "label": "3.x last",
+      "value": "v3.3.3 · 2025-01-22 · 1.7 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "20200101 · 2025-06-01 · 1.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-31 · 0.1 years ago"
+    }
+  ],
+  "date-tag-snapshot-dagger": [
+    {
+      "label": "most recent",
+      "value": "3.14.0 · 2023-01-20 · 3.7 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
     }
   ],
   "either-critical-dagger": [
@@ -2149,6 +2191,20 @@
       "value": "2026-09-29 · less than three weeks ago"
     }
   ],
+  "mc-non-dev-solve-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-01 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
   "mc-package-hold-dagger": [
     {
       "label": "installed",
@@ -2221,6 +2277,20 @@
     {
       "label": "last push",
       "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "mc-root-alias-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-01 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
     }
   ],
   "mc-root-hold-dagger": [

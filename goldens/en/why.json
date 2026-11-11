@@ -270,6 +270,13 @@
     "0 · ok · ages as of 2026-10-01",
     "checks missing: release age (S2) not checked (undated releases)"
   ],
+  "S2-parent-prerelease-undated-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "stale 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
   "S2-parent-shared-installed-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "stale 8 leads: the strongest maintenance fact counts in full",
@@ -639,6 +646,19 @@
     "the advisories alone make it high",
     "without PKSA-m4t9-vsgq-8khn: 16, high (tied: the others weigh the same)"
   ],
+  "date-tag-above-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "vulnerable 8: medium advisory CVE-2025-24027; its own fix (composer update on 3.x) is reachable, so no × 2",
+    "the advisory alone makes it medium"
+  ],
+  "date-tag-snapshot-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "stale 2: ¼ of 8, beside pinned (correlated evidence)",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "without pinned: 8, medium (stale would lead) · without stale: 16, high"
+  ],
   "either-critical-dagger": [
     "68 · critical from 32 · ages as of 2026-10-01",
     "abandoned 32 leads: the strongest maintenance fact counts in full",
@@ -995,6 +1015,11 @@
     "the advisory alone makes it high",
     "without capped: 16, high · without the advisory: 8, medium"
   ],
+  "mc-non-dev-solve-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (upgrade on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "mc-package-hold-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-45068; its own fix (upgrade on 6.x) is reachable, so no × 2",
@@ -1018,6 +1043,11 @@
   "mc-replan-major-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-69246; its own fix (upgrade on 8.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-root-alias-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
   "mc-root-hold-dagger": [

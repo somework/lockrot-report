@@ -650,6 +650,24 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "S2-parent-prerelease-undated-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "S2-parent-shared-installed-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -1661,6 +1679,39 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by PKSA-m4t9-vsgq-8khn"
+    ]
+  },
+  "date-tag-above-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "date-tag-snapshot-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
     ]
   },
   "either-critical-dagger": {
@@ -2682,6 +2733,23 @@
       "Tripped by capped and CVE-2026-48784"
     ]
   },
+  "mc-non-dev-solve-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
+    ]
+  },
   "mc-package-hold-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2765,6 +2833,23 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by CVE-2026-69246"
+    ]
+  },
+  "mc-root-alias-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
     ]
   },
   "mc-root-hold-dagger": {
