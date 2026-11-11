@@ -870,6 +870,24 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "gets-replace-held-dagger": [
+    "3 advisories: low 3",
+    "5 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "5.x your branch the move clears 3 of 3 from v5.4.52",
+    "upgrade · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "6.x clears 3 of 3 from v6.4.40",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "7.x clears 3 of 3 from v7.4.12",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "8.x clears 3 of 3 from v8.0.12",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move"
+  ],
   "github-archived-unread-dagger": [
     "no counted advisory",
     "none on record for this name",
@@ -981,6 +999,11 @@
     "php floor raise",
     "after it: 0, ok, if Composer resolves it"
   ],
+  "libyears-prerelease-undated-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "local-path-advisory": [
     "5 advisories: high 1, medium 4",
     "5 on record for this name",
@@ -991,6 +1014,18 @@
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
+  ],
+  "lock-out-of-sync-dagger": [
+    "4 advisories: medium 4",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 4 of 4 from 2.12.3",
+    "composer update",
+    "after it: 0, ok",
+    "3.x clears 4 of 4 from 3.1.0",
+    "composer update",
+    "after it: 0, ok, if Composer resolves it"
   ],
   "long-range-dagger": [
     "1 low advisory",
@@ -1377,6 +1412,23 @@
     "composer update",
     "after it: 0, ok"
   ],
+  "move-check-dev-tag-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "move-check-dev-update-dagger": [
+    "4 advisories: medium 4",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 4 of 4 from 2.12.3",
+    "composer update",
+    "after it: 0, ok · not checked: Composer's solver does not reach the release",
+    "3.x clears 4 of 4 from 3.1.0",
+    "composer update",
+    "after it: 0, ok · not checked: Composer's solver does not reach the release"
+  ],
   "not-found-cached-dagger": [
     "no counted advisory",
     "none on record for this name",
@@ -1500,6 +1552,11 @@
     "lookup complete"
   ],
   "php-null": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "php-tuf-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"

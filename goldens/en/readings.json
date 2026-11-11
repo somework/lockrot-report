@@ -423,6 +423,7 @@
     }
   ],
   "gets-below-clears-left-behind-dagger": [],
+  "gets-replace-held-dagger": [],
   "github-archived-unread-dagger": [
     {
       "flag": "old-promise",
@@ -508,6 +509,7 @@
     }
   ],
   "joomla-filter": [],
+  "libyears-prerelease-undated-dagger": [],
   "local-path-advisory": [
     {
       "flag": "pinned",
@@ -528,6 +530,7 @@
       "text": "It was written for PHP 5 and admits 8.4 untested."
     }
   ],
+  "lock-out-of-sync-dagger": [],
   "long-range-dagger": [],
   "many-dependents": [],
   "mc-baseline-refused-dagger": [],
@@ -601,6 +604,13 @@
   "mc-with-all-dagger": [],
   "mc-with-deps-dagger": [],
   "move-check-dagger": [],
+  "move-check-dev-tag-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.7 years."
+    }
+  ],
+  "move-check-dev-update-dagger": [],
   "not-found-cached-dagger": [
     {
       "flag": "old-promise",
@@ -641,6 +651,7 @@
   "php-edge-lower-dagger": [],
   "php-edge-upper-dagger": [],
   "php-null": [],
+  "php-tuf-dagger": [],
   "pinned-alpha-over-shared-dagger": [],
   "pinned-highest-shared-dagger": [],
   "pinned-newest-shared-dagger": [],

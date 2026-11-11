@@ -658,6 +658,20 @@
   "gets-below-clears-left-behind-dagger": [
     null
   ],
+  "gets-replace-held-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "incenteev/composer-parameter-handler v2.1.5",
+          "grade": null,
+          "meta": "replaces symfony/yaml ^5.4",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "github-archived-unread-dagger": [
     null
   ],
@@ -772,10 +786,16 @@
   "joomla-filter": [
     null
   ],
+  "libyears-prerelease-undated-dagger": [
+    null
+  ],
   "local-path-advisory": [
     null
   ],
   "lock-only-dagger": [
+    null
+  ],
+  "lock-out-of-sync-dagger": [
     null
   ],
   "long-range-dagger": [
@@ -1101,6 +1121,12 @@
   "move-check-dagger": [
     null
   ],
+  "move-check-dev-tag-dagger": [
+    null
+  ],
+  "move-check-dev-update-dagger": [
+    null
+  ],
   "not-found-cached-dagger": [
     null
   ],
@@ -1182,6 +1208,7 @@
   "php-null": [
     null
   ],
+  "php-tuf-dagger": [],
   "pinned-alpha-over-shared-dagger": [
     null
   ],

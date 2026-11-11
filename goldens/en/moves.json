@@ -3516,6 +3516,48 @@
       ]
     }
   ],
+  "gets-replace-held-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to ^5.4.52 through the 3 packages in Reach",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/yaml v5.4.52 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "all 3 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "Composer refuses the move"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        }
+      ]
+    }
+  ],
   "github-archived-unread-dagger": [
     {
       "heading": "Next step",
@@ -3963,6 +4005,24 @@
       ]
     }
   ],
+  "libyears-prerelease-undated-dagger": [
+    {
+      "heading": "Next step",
+      "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": []
+    }
+  ],
   "local-path-advisory": [
     {
       "heading": "Next step",
@@ -4010,6 +4070,44 @@
           "items": []
         }
       ]
+    }
+  ],
+  "lock-out-of-sync-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 2.13.1 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update guzzlehttp/psr7",
+        "composer why-not guzzlehttp/psr7 2.12.3 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all 4 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "2.x needs php ^7.2.5 || ^8.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
     }
   ],
   "long-range-dagger": [
@@ -5865,6 +5963,85 @@
       "composer": []
     }
   ],
+  "move-check-dev-tag-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, 1.6.2",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^1.6.2'",
+        "composer why-not friendsofsymfony/oauth-server-bundle 1.6.2 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": "stale",
+      "not_checked": null,
+      "adds": [
+        "old-promise: it was released before your target PHP's major"
+      ],
+      "php": {
+        "head": "1.x needs php >=5.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "18, high",
+        "conditions": [
+          "adds old-promise",
+          "Composer's solver does not reach the release"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "move-check-dev-update-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 2.13.1 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'guzzlehttp/psr7:^2.12.3'",
+        "composer why-not guzzlehttp/psr7 2.12.3 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all 4 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "2.x needs php ^7.2.5 || ^8.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "Composer's solver does not reach the release"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "not-found-cached-dagger": [
     {
       "heading": "Next step",
@@ -6386,6 +6563,7 @@
       ]
     }
   ],
+  "php-tuf-dagger": [],
   "pinned-alpha-over-shared-dagger": [
     {
       "heading": "The move",
