@@ -465,6 +465,9 @@ export const skipLinkLabel = (lists: boolean): string => (lists ? "Skip to the l
 /** What a row's role does not announce: Enter opens it. Read through `aria-describedby`. */
 export const ROW_HINT = "Press Enter on a row to open its package.";
 
+/** At the wide layout focus stays on the row, so a live region names the package that opened. */
+export const openedBesideList = (pkg: string): string => `${pkg} opened beside the list`;
+
 /** `next_step.kind` in the schema's `x-known-values` order (`#/definitions/move/properties/kind`),
  *  each with the short words the move cards and the Findings row use for it. */
 export const MOVE_KIND_WORDS: readonly (readonly [kind: string, words: string])[] = [

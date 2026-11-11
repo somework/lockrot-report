@@ -460,6 +460,27 @@ describe("keyboard", () => {
     expect(detailName()).toBeNull();
   });
 
+  test("at the wide layout a live region names the package Enter opens, and Escape empties it", () => {
+    media({ wide: true });
+    render(<App model={load()} />);
+    const twig = row("twig/twig");
+
+    key("Enter", twig);
+    expect(document.querySelector(".open-note")?.textContent).toBe("twig/twig opened beside the list");
+    key("Escape");
+    expect(document.querySelector(".open-note")?.textContent).toBe("");
+  });
+
+  test("below the wide layout the sheet's heading takes focus and the live region stays empty", () => {
+    media({ wide: false });
+    render(<App model={load()} />);
+
+    key("Enter", row("twig/twig"));
+
+    expect(detailName()).toBe("twig/twig");
+    expect(document.querySelector(".open-note")?.textContent).toBe("");
+  });
+
   test("after a click, j moves focus with the open package, so Enter opens the row j reached", () => {
     render(<App model={load()} />);
     const first = row(BY_RANK[0] ?? "");

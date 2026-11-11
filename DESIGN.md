@@ -691,6 +691,11 @@ segment shows its role by its border's style (PD-SCORE-3). `e2e/forced-colors.sp
   `inert` while it is up: Tab stays in the sheet. `j`/`k` still walk the list under it, re-focusing
   the heading so it is announced; Escape and Close hand focus to the row reached; `/` closes the
   sheet on its way to the search box. A `#pkg=` sheet on load leaves focus alone (PD-ROWS-12).
+- From 1000px the package opens beside the list and focus stays on the row, so a change of
+  `aria-current` is the only change on the focused element, which many screen readers do not
+  announce. A reader's own open there (click, Enter, `j`/`k`) puts "{package} opened beside the list"
+  in a polite live region (`.open-note`). Any other state change empties it, so the next open is
+  announced again. A sheet announces itself through its focused heading, so the region stays empty.
 - Roving tabindex (`ui/rowCursor.ts`, PD-ROWS-11): one row of the list has `tabindex="0"` — the open
   package's, else the one last opened, else the first — every other row `-1`, and the links inside
   a row are `-1` except on that row. Tab reaches the list once, then that row's links, then the

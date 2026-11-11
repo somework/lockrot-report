@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import { activeFilters } from "../domain/filters";
 import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
 import { pageTitle, projectName } from "../domain/pageTitle";
-import { skipLinkLabel } from "../domain/pageVocabulary";
+import { openedBesideList, skipLinkLabel } from "../domain/pageVocabulary";
 import { PHP_WINDOW_SECTION } from "../domain/runState";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
@@ -294,6 +294,7 @@ export function App({ model, title }: { model: Model; title?: string | undefined
   // Set by every package a reader opens (click, Enter, `j`/`k`), never by the boot address or a
   // `hashchange`: only a reader's own open moves focus into a sheet (PD-ROWS-12).
   const openedByReader = useRef(false);
+  const [openNote, setOpenNote] = useState("");
   const dispatch = useCallback(
     (action: Action) => {
       if (action.type === "select" && action.pkg !== null) openedByReader.current = true;
@@ -426,6 +427,7 @@ export function App({ model, title }: { model: Model; title?: string | undefined
     focusRequest.current = null;
     const opened = openedByReader.current;
     openedByReader.current = false;
+    setOpenNote(opened && !sheet && state.pkg !== null ? openedBesideList(state.pkg) : "");
     // A clicked row holds focus: remember which of its package's rows it was.
     const active = document.activeElement;
     if (active instanceof HTMLElement && state.pkg !== null && active.getAttribute("data-pkg") === state.pkg)
@@ -563,6 +565,9 @@ export function App({ model, title }: { model: Model; title?: string | undefined
             </div>
           )}
         </div>
+        <span className="open-note vh" aria-live="polite">
+          {openNote}
+        </span>
       </main>
       <Footer inert={sheet} />
       <Glossary
