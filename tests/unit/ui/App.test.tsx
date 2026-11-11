@@ -1,4 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import { copySummary } from "../../../src/domain/copySummary";
@@ -953,6 +955,25 @@ describe("layout", () => {
         })}
       />,
     );
+
+    const facts = [...document.querySelectorAll(".topbar .run-meta > span")].map((s) => s.textContent);
+    expect(facts).toContain("ages as of 2026-10-01");
+    expect(facts.filter((f) => f.includes("data"))).toEqual([]);
+  });
+
+  test("the header of an empty lock names only the ages date (SPEC §7.9.3, R16-9b)", () => {
+    // The model's empty-lock page: packages_checked 0, data_date null, generated 2026-10-01.
+    const path = join(
+      process.cwd(),
+      ".lockrot/tests/fixtures/schema/documents/page/empty-lock.offline-dagger.json",
+    );
+    const result = normalize({
+      report: JSON.parse(readFileSync(path, "utf8")) as Report2Embed["report"],
+      details: {},
+    });
+    if (!result.ok) throw new Error(result.error.message);
+
+    render(<App model={result.model} />);
 
     const facts = [...document.querySelectorAll(".topbar .run-meta > span")].map((s) => s.textContent);
     expect(facts).toContain("ages as of 2026-10-01");
