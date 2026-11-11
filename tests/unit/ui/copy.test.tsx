@@ -162,7 +162,7 @@ describe("the name of each copy control", () => {
       const pkg = move.querySelector(".ov-move-pkg")?.textContent ?? "";
       const copy = move.querySelector(".d2-copy-btn");
       const shell = move.querySelector(".d2-shell-btn");
-      expect(accessibleName(copy as Element)).toBe(`Copy ${pkg}`);
+      expect(accessibleName(copy as Element)).toBe(`Copy the command for ${pkg}`);
       expect(accessibleName(shell as Element)).toBe(`Shell: POSIX for ${pkg}`);
       expect(accessibleName(shell as Element)).toContain(shell?.textContent ?? "-");
     }
@@ -177,7 +177,10 @@ describe("the name of each copy control", () => {
     const names = [...(sheet?.querySelectorAll(".d2-copy-btn") ?? [])].map(accessibleName);
     const shells = [...(sheet?.querySelectorAll(".d2-shell-btn") ?? [])].map(accessibleName);
 
-    expect(names).toEqual(["Copy symfony/monolog-bridge", "Copy symfony/monolog-bridge, step 2"]);
+    expect(names).toEqual([
+      "Copy the commands for symfony/monolog-bridge",
+      "Copy the commands for symfony/monolog-bridge, step 2",
+    ]);
     expect(shells).toEqual([
       "Shell: POSIX for symfony/monolog-bridge",
       "Shell: POSIX for symfony/monolog-bridge, step 2",
@@ -189,10 +192,10 @@ describe("the name of each copy control", () => {
     const sheet = openSheet();
     const pkg = model().report.findings[0]?.package ?? "";
 
-    fireEvent.click(within(sheet).getByRole("button", { name: `Copy ${pkg}` }));
+    fireEvent.click(within(sheet).getByRole("button", { name: `Copy the commands for ${pkg}` }));
 
     await waitFor(() => {
-      expect(within(sheet).getByRole("button", { name: `Copied ${pkg}` })).toBeTruthy();
+      expect(within(sheet).getByRole("button", { name: `Copied the commands for ${pkg}` })).toBeTruthy();
     });
   });
 

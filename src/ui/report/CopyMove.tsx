@@ -117,7 +117,11 @@ export function CopyMove({
           <button
             type="button"
             className="d2-btn d2-copy-btn"
-            aria-label={owner === undefined ? undefined : `${LABELS[status]} ${owner}`}
+            aria-label={
+              owner === undefined
+                ? undefined
+                : `${LABELS[status]} ${(argvs.length === 1 ? DETAIL_WORDS.copiesCommand : DETAIL_WORDS.copiesCommands).replace("{owner}", owner)}`
+            }
             onClick={copy}
           >
             {LABELS[status]}

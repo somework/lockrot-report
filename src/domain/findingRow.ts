@@ -15,7 +15,7 @@ import {
 } from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { compareHolds } from "./holdRank";
-import { isZeroLine, newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
+import { isZeroLine, newLineTag, phpSubject, ROOT_HOLDER_NAME } from "./moveCards";
 import { afterIt, holderWord } from "./securityBlock";
 import { commandLine } from "./shellArgv";
 import { allowlistByInWhy, allowlistReason, headlineReasonWord, stoppedCheckWords } from "./pageVocabulary";
@@ -292,9 +292,10 @@ export const rowBlockedWords = (f: Finding, run: Run): string | null =>
 function blockedWords(step: Move, run: Run): string {
   if (step.source === "pinned") return `no tag runs on ${run.target_php}`;
   const requires = step.php_check?.requires ?? null;
+  const subject = phpSubject(step) ?? "a fixing release";
   return requires === null
-    ? `${step.to_branch ?? ""} does not run on ${run.target_php}`
-    : `${step.to_branch ?? ""} needs php ${requires}; target ${run.target_php} runs no ${step.fix_kind === null ? "newer" : "fixing"} release`;
+    ? `${subject} does not run on ${run.target_php}`
+    : `${subject} needs php ${requires}; target ${run.target_php} runs no ${step.fix_kind === null ? "newer" : "fixing"} release`;
 }
 
 function kindWords(f: Finding, step: Move, run: Run): string {

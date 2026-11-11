@@ -78,7 +78,7 @@ test.describe("drupal/core, 62 advisories in a recorded drupal-site run", () => 
     const sheet = await openSheet(page, NAME, CORE);
     const row = securityRow(sheet);
     const jump = row.getByRole("link", { name: "unrated 38, show the group" });
-    const target = (await jump.getAttribute("href"))?.slice(1) ?? "";
+    const target = (await jump.getAttribute("data-jump")) ?? "";
     const url = page.url();
 
     await jump.click();
@@ -86,6 +86,19 @@ test.describe("drupal/core, 62 advisories in a recorded drupal-site run", () => 
     await expect(page.locator(`[id="${target}"] button`)).toHaveAttribute("aria-expanded", "true");
     await expect(page.locator(`[id="${target}"]`)).toBeFocused();
     expect(page.url()).toBe(url);
+  });
+
+  test("a summary count's copied address opens the same package", async ({ page }) => {
+    const sheet = await openSheet(page, NAME, CORE);
+    const href =
+      (await securityRow(sheet)
+        .getByRole("link", { name: "unrated 38, show the group" })
+        .getAttribute("href")) ?? "";
+
+    const fresh = await page.context().newPage();
+    await fresh.goto(sheetUrl(NAME) + href);
+
+    await expect(detailSurface(fresh).getByRole("heading", { name: CORE, level: 2 })).toBeVisible();
   });
 
   test("a row that repeats a CVE links the earlier row, and the link opens that row's group", async ({
@@ -103,12 +116,12 @@ test.describe("drupal/core, 62 advisories in a recorded drupal-site run", () => 
         links.findIndex(
           (a) =>
             a.closest(".d3-sev-group") !==
-            document.getElementById(a.getAttribute("href")?.slice(1) ?? "")?.closest(".d3-sev-group"),
+            document.getElementById(a.getAttribute("data-jump") ?? "")?.closest(".d3-sev-group"),
         ),
       );
     expect(at).toBeGreaterThanOrEqual(0);
     const link = row.locator(".d3-adv-same a").nth(at);
-    const target = page.locator(`[id="${(await link.getAttribute("href"))?.slice(1) ?? ""}"]`);
+    const target = page.locator(`[id="${(await link.getAttribute("data-jump")) ?? ""}"]`);
     await target.locator("xpath=ancestor::div[contains(@class,'d3-sev-group')]/h4/button").click();
     await expect(target).toBeHidden();
 
@@ -123,7 +136,7 @@ test.describe("drupal/core, 62 advisories in a recorded drupal-site run", () => 
     const sheet = await openSheet(page, NAME, CORE);
     const link = sheet.locator(".d3-verdict-line").getByRole("link", { name: "62 advisories" });
 
-    await expect(link).toHaveAttribute("href", `#${(await securityRow(sheet).getAttribute("id")) ?? "none"}`);
+    await expect(link).toHaveAttribute("data-jump", (await securityRow(sheet).getAttribute("id")) ?? "none");
     await link.click();
     await expect(securityRow(sheet)).toBeFocused();
     await expect(detailSurface(page)).toHaveCount(1);

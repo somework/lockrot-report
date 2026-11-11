@@ -28,7 +28,7 @@ import type { Report2 } from "../../model/report";
 import { EMPTY_FILTERS } from "../../state/types";
 import { useReport } from "../context";
 import { LIST_HEAD_H, useMeasuredHeight } from "../useMeasuredHeight";
-import { RowHint, toneClass } from "../common/common";
+import { RowHint, RowHintContext, toneClass, useRowDescription } from "../common/common";
 import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
 import { CleanMark } from "../ledger/CleanMark";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
@@ -165,12 +165,14 @@ function AdvisoryRow2({
   const php = advisoryFixPhp(row.fix);
   const held = heldByLine(row.fix.held_by, run, finding.package);
   const inner = innerTabIndex(finding.package, cursor, first);
+  const described = useRowDescription();
   return (
     <div
       role="row"
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       aria-label={advisoryRowLabel2(pair)}
+      aria-describedby={described}
       data-pkg={finding.package}
       className={`adv ${toneClass(gradeTone(advisoryBand(run, row.severity)))}`}
       {...openInteractions(finding.package, dispatch)}
@@ -372,11 +374,13 @@ export function AdvisoriesView2() {
             </div>
           )}
           <RowHint id={hintId} />
-          <div className="aledger no-axis" role="table" aria-label="Advisories" aria-describedby={hintId}>
+          <div className="aledger no-axis" role="grid" aria-readonly="true" aria-label="Advisories">
             <AdvisoryHead />
-            {groups.map((group) => (
-              <Group key={group.finding.package} group={group} run={run} first={first} />
-            ))}
+            <RowHintContext.Provider value={hintId}>
+              {groups.map((group) => (
+                <Group key={group.finding.package} group={group} run={run} first={first} />
+              ))}
+            </RowHintContext.Provider>
           </div>
         </>
       )}

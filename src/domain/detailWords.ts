@@ -22,6 +22,8 @@ export const DETAIL_WORDS = {
   copy: "Copy",
   copied: "Copied",
   copyByHand: "Select it and copy",
+  copiesCommand: "the command for {owner}",
+  copiesCommands: "the commands for {owner}",
   shell: "Shell",
   shellFor: "Shell: {shell}",
   verdict: "Verdict",

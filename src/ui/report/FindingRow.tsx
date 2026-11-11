@@ -26,7 +26,7 @@ import { READY_WORD, readyToRun } from "../../domain/readyToRun";
 import { commandWords } from "../../domain/shellArgv";
 import type { AgeAxis } from "../../domain/age";
 import { useReport } from "../context";
-import { toneClass } from "../common/common";
+import { toneClass, useRowDescription } from "../common/common";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { FlagPills } from "./FlagPills";
@@ -214,6 +214,7 @@ export function FindingRow2({
 }) {
   const { state, dispatch, cursor } = useReport();
   const spoken = `${useId()}-spoken`;
+  const described = useRowDescription(spoken);
   const accepted = maintenanceAccepted(finding);
   return (
     <div
@@ -221,7 +222,7 @@ export function FindingRow2({
       className={`frow f2-row ${toneClass(gradeTone(finding.verdict))}`}
       data-pkg={finding.package}
       aria-label={finding.package}
-      aria-describedby={spoken}
+      aria-describedby={described}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       tabIndex={rowTabIndex(finding.package, cursor)}
       {...openInteractions(finding.package, dispatch)}

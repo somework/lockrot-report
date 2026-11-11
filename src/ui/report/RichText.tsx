@@ -1,10 +1,14 @@
+import type { ComponentChildren } from "preact";
 import type { JumpTarget, Rich } from "../../domain/rich";
+import { serializeHash } from "../../state/hash";
 import { OutLink } from "../common/common";
+import { useReport } from "../context";
+import { isPlainClick } from "../plainClick";
 import { jumpInDetail } from "./jumpInDetail";
 
 /** Scrolls to an element of the sheet. The page keeps its state in the URL fragment, so a jump
  *  never sets the fragment: `#id` would drop the open package. */
-export function jumpTo(event: MouseEvent, id: string): void {
+function jumpTo(event: MouseEvent, id: string): void {
   event.preventDefault();
   // A frame later, so a group the click opens has drawn the row it lands on.
   requestAnimationFrame(() => {
@@ -14,6 +18,40 @@ export function jumpTo(event: MouseEvent, id: string): void {
     jumpInDetail(target);
     target.focus({ preventScroll: true });
   });
+}
+
+/** A jump to `to` inside the sheet. Its href is the page's own address, the open package included,
+ *  because `#id` opens no package and its useId value differs on the next load. */
+export function JumpLink({
+  to,
+  className = "lnk",
+  label,
+  onJump,
+  children,
+}: {
+  to: string;
+  className?: string;
+  label?: string;
+  /** Opens what hides the target, before the jump. */
+  onJump?: () => void;
+  children: ComponentChildren;
+}) {
+  const { state } = useReport();
+  return (
+    <a
+      className={className}
+      href={"#" + serializeHash(state)}
+      data-jump={to}
+      aria-label={label}
+      onClick={(event) => {
+        if (!isPlainClick(event)) return;
+        onJump?.();
+        jumpTo(event, to);
+      }}
+    >
+      {children}
+    </a>
+  );
 }
 
 /** The ids the sheet's in-page jumps land on; a target the sheet does not draw prints as text. */
@@ -37,16 +75,9 @@ export function RichText({ rich, jumps = {} }: { rich: Rich; jumps?: JumpIds }) 
         const target = jumps[piece.jump];
         if (target === undefined) return (piece.lead ?? "") + piece.text;
         const link = (
-          <a
-            key={i}
-            className={piece.lead === undefined ? "lnk d3-count-link" : "lnk"}
-            href={`#${target}`}
-            onClick={(event) => {
-              jumpTo(event, target);
-            }}
-          >
+          <JumpLink key={i} to={target} className={piece.lead === undefined ? "lnk d3-count-link" : "lnk"}>
             {piece.text}
-          </a>
+          </JumpLink>
         );
         return piece.lead === undefined ? (
           link

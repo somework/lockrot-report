@@ -1491,6 +1491,24 @@
       "value": "2026-08-02 · 0.2 years ago"
     }
   ],
+  "gets-replace-held-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.3.14 · 2022-01-26 · 4.7 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
   "github-archived-unread-dagger": [
     {
       "label": "installed",
@@ -1701,6 +1719,20 @@
       "value": "2026-09-29 · less than three weeks ago"
     }
   ],
+  "libyears-prerelease-undated-dagger": [
+    {
+      "label": "installed",
+      "value": "2.1.1 · 2023-06-02 · 3.3 years ago · the newest on 2.x"
+    },
+    {
+      "label": "last push",
+      "value": "2023-06-02 · 3.3 years ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
   "local-path-advisory": [
     {
       "label": null,
@@ -1727,6 +1759,24 @@
     {
       "label": "last push",
       "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "lock-out-of-sync-dagger": [
+    {
+      "label": "installed",
+      "value": "2.8.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.13.1 · 2026-08-24 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "3.1.0 · 2026-08-24 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-24 · 0.1 years ago"
     }
   ],
   "long-range-dagger": [
@@ -2363,6 +2413,34 @@
       "value": "2026-06-08 · 0.3 years ago"
     }
   ],
+  "move-check-dev-tag-dagger": [
+    {
+      "label": "most recent",
+      "value": "1.6.2 · 2019-01-23 · 7.7 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
+  "move-check-dev-update-dagger": [
+    {
+      "label": "installed",
+      "value": "2.8.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.13.1 · 2026-08-24 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "3.1.0 · 2026-08-24 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-24 · 0.1 years ago"
+    }
+  ],
   "not-found-cached-dagger": [
     {
       "label": "installed",
@@ -2635,6 +2713,28 @@
     {
       "label": "last push",
       "value": "2026-02-28 · 0.6 years ago"
+    }
+  ],
+  "php-tuf-dagger": [
+    {
+      "label": "installed",
+      "value": "1.0.3 · release date not known (no date)"
+    },
+    {
+      "label": null,
+      "value": "installed not read (no date)"
+    },
+    {
+      "label": null,
+      "value": "1.x not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (not from a Composer repository)"
     }
   ],
   "pinned-alpha-over-shared-dagger": [

@@ -354,6 +354,9 @@
     "Your branch, 4.x, had its last release, v4.4.41, 4.5 years ago.",
     "The move's branch, 5.x, released v5.4.45 2.0 years ago."
   ],
+  "gets-replace-held-dagger": [
+    "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
+  ],
   "github-archived-unread-dagger": [
     "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
   ],
@@ -407,9 +410,16 @@
   "joomla-filter": [
     "Your branch, 2.x, had its last release, 2.0.6, 1.0 years ago."
   ],
+  "libyears-prerelease-undated-dagger": [
+    "Your branch, 2.x, had its last release, 2.1.1, 3.3 years ago.",
+    "It has no higher branch."
+  ],
   "local-path-advisory": [],
   "lock-only-dagger": [
     "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "lock-out-of-sync-dagger": [
+    "Your branch, 2.x, had its last release, 2.13.1, 0.1 years ago."
   ],
   "long-range-dagger": [
     "Your branch, 1.x, had its last release, v1.43.0, less than three weeks ago.",
@@ -576,6 +586,12 @@
     "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
+  "move-check-dev-tag-dagger": [
+    "A branch snapshot, dev-master, is installed."
+  ],
+  "move-check-dev-update-dagger": [
+    "Your branch, 2.x, had its last release, 2.13.1, 0.1 years ago."
+  ],
   "not-found-cached-dagger": [
     "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
   ],
@@ -638,6 +654,7 @@
     "Your branch, 10.x, had its last release, 10.0.1, 3.5 years ago.",
     "The move's branch, 12.x, released 12.0.0 1.6 years ago."
   ],
+  "php-tuf-dagger": [],
   "pinned-alpha-over-shared-dagger": [
     "A branch snapshot, dev-master, is installed."
   ],

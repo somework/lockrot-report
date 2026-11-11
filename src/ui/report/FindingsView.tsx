@@ -24,7 +24,7 @@ import { verdictTone } from "../../domain/findingRow";
 import type { ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
 import { useReport } from "../context";
-import { LegendButton, RowHint, toneClass } from "../common/common";
+import { LegendButton, RowHint, RowHintContext, toneClass } from "../common/common";
 import { EmptyState } from "../views/EmptyState";
 import { AgeAxis as AgeAxisHead } from "../views/AgeScale";
 import { FindingRow2 } from "./FindingRow";
@@ -35,6 +35,7 @@ import "../views/ledger-rows.css";
 import "./findings.css";
 import { platformStep } from "../../domain/moveCards";
 import { LIST_HEAD_H, useMeasuredHeight } from "../useMeasuredHeight";
+import { isPlainClick } from "../plainClick";
 
 /** `applyFilters2` keeps `rank` order, which runs grade by grade, so a boundary is enough. */
 function byGrade(findings: readonly Finding[]): { verdict: string; findings: Finding[] }[] {
@@ -162,7 +163,7 @@ function Group({ verdict, findings, axis }: { verdict: string; findings: Finding
           .filter((part) => part !== null)
           .join(", ")}
       >
-        <h2 aria-label={verdict}>{verdict}</h2>
+        <h3 aria-label={verdict}>{verdict}</h3>
         <span className="fgroup-count">{packagesCount(findings.length)}</span>
         {gateWords !== null && <span className="fgroup-gate">{gateWords}</span>}
         {majors !== null && <span className="fgroup-major">{majors}</span>}
@@ -235,7 +236,7 @@ export function FindingsStrip() {
         className="ov-link f2-strip-back"
         href="#"
         onClick={(event) => {
-          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          if (!isPlainClick(event)) return;
           event.preventDefault();
           dispatch({ type: "view", view: "overview" });
         }}
@@ -245,6 +246,8 @@ export function FindingsStrip() {
     </div>
   );
 }
+
+const FINDINGS_TAB = "Findings";
 
 /** The Findings tab of a report-2 document (SPEC §7.9.5): graded findings by grade, in `rank`
  *  order. */
@@ -258,17 +261,20 @@ export function FindingsView2() {
   const hintId = `${useId()}-hint`;
   return (
     <section className="f2" data-surface="findings">
+      {!printed && <h2 className="vh">{FINDINGS_TAB}</h2>}
       <Notes report={report} />
       {rows.length === 0 ? (
         <EmptyState reason={population2(report, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
         <>
           {platform !== null && <p className="f2-platform">{platform}</p>}
-          <div className="fledger f2-ledger" role="table" aria-label="Findings" aria-describedby={hintId}>
+          <div className="fledger f2-ledger" role="grid" aria-readonly="true" aria-label={FINDINGS_TAB}>
             {!printed && <ColumnHead run={report.run} axis={axis} onScreen />}
-            {byGrade(rows).map((group) => (
-              <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
-            ))}
+            <RowHintContext.Provider value={hintId}>
+              {byGrade(rows).map((group) => (
+                <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
+              ))}
+            </RowHintContext.Provider>
           </div>
           <RowHint id={hintId} />
         </>

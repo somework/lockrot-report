@@ -19,6 +19,12 @@ describe("sharePhrase", () => {
     expect(sharePhrase(69, 271)).toBe("25%");
   });
 
+  it("rounds an exact half up, as the load line does", () => {
+    // Arrange / Act / Assert: 23 / 40 = 57.5% and 29 / 200 = 14.5%.
+    expect(sharePhrase(23, 40)).toBe("58%");
+    expect(sharePhrase(29, 200)).toBe("15%");
+  });
+
   it("never reads 0% for a lock with something flagged, nor 100% for one with something clean", () => {
     // Arrange / Act / Assert
     expect(sharePhrase(1, 400)).toBe("under 1%");

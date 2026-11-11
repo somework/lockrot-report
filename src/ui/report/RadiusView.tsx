@@ -25,7 +25,7 @@ import {
   type RadiusRow2,
 } from "../../domain/radius2";
 import { useReport } from "../context";
-import { RowHint, toneClass } from "../common/common";
+import { RowHint, RowHintContext, toneClass, useRowDescription } from "../common/common";
 import { usePrinted } from "../print/printContext";
 import { useNarrow } from "../useWide";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
@@ -55,13 +55,14 @@ interface ChildProps {
 function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
   const { state, dispatch, cursor } = useReport();
   const id = useId();
+  const described = useRowDescription(`${id}-said`);
   return (
     <li
       className={`r2-kid ${toneClass(gradeTone(finding.verdict))}`}
       style={{ "--depth": String(depth) }}
       data-pkg={finding.package}
       aria-label={finding.package}
-      aria-describedby={`${id}-said`}
+      aria-describedby={described}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       {...openInteractions(finding.package, dispatch)}
@@ -106,11 +107,12 @@ function ParentRow2({
   const id = useId();
   const kidsId = `${id}-kids`;
   const facts = radiusRowFacts(report, row);
-  const described = [
+  const own = [
     ...(row.self === null ? [] : [`${id}-self`]),
     ...(facts.count === null ? [] : [`${id}-count`]),
     ...(facts.mix === null && facts.note === null ? [] : [`${id}-mix`]),
-  ].join(" ");
+  ];
+  const described = useRowDescription(...own);
   const toggle = (event: Event) => {
     event.stopPropagation();
     dispatch({ type: "disclose", key: rowKey(row.package), open: !open });
@@ -268,8 +270,8 @@ export function RadiusView2() {
       {answer.length > 0 && <p className="r2-answer">{answer.join(" ")}</p>}
       {(layout.lead.length > 0 || layout.singles.length > 0) && <RowHint id={hintId} />}
       {layout.lead.length > 0 && (
-        <ul className="r2-list" aria-label={RADIUS_WORDS.list} aria-describedby={hintId}>
-          {rows(layout.lead, 1)}
+        <ul className="r2-list" aria-label={RADIUS_WORDS.list}>
+          <RowHintContext.Provider value={hintId}>{rows(layout.lead, 1)}</RowHintContext.Provider>
         </ul>
       )}
       {layout.singles.length > 0 && (
@@ -278,8 +280,10 @@ export function RadiusView2() {
           open={printed || isSinglesOpen(layout, input)}
           head={RADIUS_WORDS.singles(layout.singles.length)}
         >
-          <ul className="r2-list" aria-describedby={hintId}>
-            {rows(layout.singles, layout.lead.length + 1)}
+          <ul className="r2-list">
+            <RowHintContext.Provider value={hintId}>
+              {rows(layout.singles, layout.lead.length + 1)}
+            </RowHintContext.Provider>
           </ul>
         </Fold>
       )}

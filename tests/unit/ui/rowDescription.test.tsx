@@ -43,7 +43,7 @@ describe("the description of a focused row", () => {
       expect(
         screen.getByRole("row", {
           name: finding.package,
-          description: `Score ${String(finding.score.total)} ${finding.verdict}`,
+          description: `Score ${String(finding.score.total)} ${finding.verdict} Press Enter on a row to open its package.`,
         }),
       ).toBe(row);
     }
@@ -85,7 +85,7 @@ describe("the description of a focused row", () => {
       expect(
         screen.getByRole("listitem", {
           name: finding.package,
-          description: `score ${String(finding.score.total)} ${finding.verdict}`,
+          description: `score ${String(finding.score.total)} ${finding.verdict} Press Enter on a row to open its package.`,
         }),
       ).toBe(kid);
     }

@@ -150,7 +150,7 @@ export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value
   const solvesApart =
     overrideOutsideTarget(run) !== null &&
     run.move_check !== null &&
-    run.move_check.reason !== "lock_disabled";
+    run.move_check.baseline !== "not_checked";
   return [
     ...(window.with_dev === null
       ? [{ key: "PHP window", value: setCells(window.without_dev, known) }]

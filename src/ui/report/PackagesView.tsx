@@ -17,7 +17,7 @@ import {
 import { signalName } from "../../domain/pageVocabulary";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
-import { RowHint, toneClass } from "../common/common";
+import { RowHint, RowHintContext, toneClass, useRowDescription } from "../common/common";
 import { usePrinted } from "../print/printContext";
 import { rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
@@ -80,13 +80,14 @@ function PackageRow({
   const run: Run = report.run;
   const id = useId();
   const graded = run.graded_verdicts.some((verdict) => verdict === finding.verdict);
+  const described = useRowDescription(scoreHead, `${id}-score`, `${id}-verdict`);
   return (
     <tr
       role="row"
       className={graded ? `p2-row ${toneClass(gradeTone(finding.verdict))}` : "p2-row is-ungraded"}
       data-pkg={finding.package}
       aria-label={finding.package}
-      aria-describedby={`${scoreHead} ${id}-score ${id}-verdict`}
+      aria-describedby={described}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       tabIndex={rowTabIndex(finding.package, cursor)}
       {...openInteractions(finding.package, dispatch)}
@@ -203,9 +204,9 @@ export function PackagesView2() {
       >
         <table
           className={showData ? "p2-table has-data" : "p2-table"}
-          role="table"
+          role="grid"
+          aria-readonly="true"
           aria-label="All packages"
-          aria-describedby={hintId}
         >
           <thead role="rowgroup">
             <tr role="row">
@@ -246,16 +247,18 @@ export function PackagesView2() {
             </tr>
           </thead>
           <tbody role="rowgroup">
-            {rows.map((finding) => (
-              <PackageRow
-                key={finding.package}
-                finding={finding}
-                report={report}
-                hideAccepted={hideAccepted}
-                showData={showData}
-                scoreHead={scoreHead}
-              />
-            ))}
+            <RowHintContext.Provider value={hintId}>
+              {rows.map((finding) => (
+                <PackageRow
+                  key={finding.package}
+                  finding={finding}
+                  report={report}
+                  hideAccepted={hideAccepted}
+                  showData={showData}
+                  scoreHead={scoreHead}
+                />
+              ))}
+            </RowHintContext.Provider>
           </tbody>
         </table>
       </div>

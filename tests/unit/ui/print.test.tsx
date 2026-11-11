@@ -51,9 +51,11 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
 
     const doc = printDoc(container);
     const headings = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
-    expect(headings.filter((name) => name.endsWith("All packages") || name.endsWith("Blast radius"))).toEqual(
-      ["4Blast radius", "6All packages"],
-    );
+    expect(
+      headings.filter(
+        (name) => name.endsWith("Findings") || name.endsWith("All packages") || name.endsWith("Blast radius"),
+      ),
+    ).toEqual(["2Findings", "4Blast radius", "6All packages"]);
     window.dispatchEvent(new Event("afterprint"));
   });
 
@@ -137,7 +139,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
 
     const doc = printDoc(container);
     const groups = [...doc.querySelectorAll(".pd-findings .fgroup")];
-    expect(groups.map((group) => group.querySelector(".fgroup-head h2")?.textContent)).toEqual([
+    expect(groups.map((group) => group.querySelector(".fgroup-head h3")?.textContent)).toEqual([
       "critical",
       "high",
       "low",

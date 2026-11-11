@@ -340,7 +340,7 @@ export class NewReportPage implements ReportPage {
     return this.page.evaluate(() => {
       const active = document.activeElement;
       if (!active) return null;
-      // A Findings row is a plain `<li>` and a Packages row a `<tr>`: their roles are implicit.
+      // A Blast radius row is an `<li>` with no explicit role.
       const role = active.getAttribute("role") ?? { LI: "listitem", TR: "row" }[active.tagName];
       if (role === "row" || role === "option" || role === "listitem") {
         // The same name `rows()` reads: an Advisories row's accessible name adds its severity and

@@ -1,4 +1,5 @@
-import type { ComponentChildren } from "preact";
+import { createContext, type ComponentChildren } from "preact";
+import { useContext } from "preact/hooks";
 import { safeHref } from "../../domain/links";
 import { ROW_HINT } from "../../domain/pageVocabulary";
 import { newTab } from "../../domain/rich";
@@ -11,13 +12,24 @@ import "./common.css";
  * (DESIGN.md §1.3). The tone classes are defined once, in styles/base.css.
  */
 
-/** The sentence a list names in `aria-describedby`. `hidden`, so browse mode does not read it twice. */
+/** The sentence each row of a list names in `aria-describedby`. `hidden`, so browse mode does not read it
+ *  as text too. */
 export function RowHint({ id }: { id: string }) {
   return (
     <p id={id} hidden>
       {ROW_HINT}
     </p>
   );
+}
+
+/** The id of the hint of the list that holds a row. */
+export const RowHintContext = createContext<string | null>(null);
+
+/** A row's `aria-describedby`: its own parts, then its list's hint (PD-ROWS-20). */
+export function useRowDescription(...own: string[]): string | undefined {
+  const hint = useContext(RowHintContext);
+  const ids = [...own, ...(hint === null ? [] : [hint])].filter((id) => id !== "");
+  return ids.length === 0 ? undefined : ids.join(" ");
 }
 
 /** The name of a heading drawn in CSS capitals, which Chromium would read out as written. A note

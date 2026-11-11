@@ -271,6 +271,20 @@ describe("R14-22: the check line when config.lock is false", () => {
   });
 });
 
+describe("R17-Q2: the check line when the solve reaches no release", () => {
+  test("reads the reason words alone, because the solver ran", () => {
+    const { finding, run } = modelCase("holder-vuln-dagger");
+    const move = finding.next_step;
+    if (move === null) throw new Error("holder-vuln‡ has a move");
+    const unchecked = {
+      ...move,
+      check: { result: "not_checked", form: null, reason: "installs_no_release", installs: "dev-main" },
+    } as typeof move;
+
+    expect(plain(checkLine(unchecked, run) ?? [])).toBe("Composer's solver does not reach the release");
+  });
+});
+
 describe("OWN, G118: a hold by its own release", () => {
   test("names that release, with its link words and no grade, flags or own step (wallabag 7.4's symfony/mailer)", () => {
     const { finding, run } = modelCase("holder-vuln-dagger");
@@ -945,5 +959,48 @@ describe("the php head of a move to a tag with no branch", () => {
     const php = moveCards(finding, run)[0]?.php;
 
     expect(php?.head ? plain(php.head) : null).toBe(head);
+  });
+});
+
+describe("a blocked move with no branch and no newest tag", () => {
+  const card = (
+    subject: { to_branch?: string; version?: string; constraint?: string },
+    requires: string | null,
+  ) => {
+    const { finding, run } = modelCase("A-blocked-dagger");
+    const move = finding.next_step;
+    if (move?.php_check == null) throw new Error("the case has a blocked move with a php check");
+    const step = {
+      ...move,
+      to_branch: null,
+      latest: null,
+      version: null,
+      constraint: null,
+      ...subject,
+      php_check: { ...move.php_check, requires },
+    };
+    return { card: moveCards({ ...finding, next_step: step }, run)[0], lead: moveCards(finding, run)[0] };
+  };
+
+  test.each([
+    [{ version: "v3.4.1" }, "v3.4.1 needs php >=8.1.0"],
+    [{ constraint: "^3.4" }, "^3.4 needs php >=8.1.0"],
+    [{ version: "v3.4.1", constraint: "^3.4" }, "v3.4.1 needs php >=8.1.0"],
+  ])("names %o as the subject of its php head (ruling W17-X3)", (subject, head) => {
+    expect(plain(card(subject, ">=8.1.0").card?.php?.head ?? [])).toBe(head);
+  });
+
+  test("prints no php head and keeps the answer lines when nothing names the release (ruling W17-X3)", () => {
+    const { card: branchless, lead } = card({}, ">=8.1.0");
+
+    expect(branchless?.php?.head).toBeNull();
+    expect(branchless?.php?.lines).toEqual(lead?.php?.lines);
+  });
+
+  test.each([
+    [">=8.1.0", "A fixing release fixes it but needs php >=8.1.0, which your target, 8.0, does not run"],
+    [null, "A fixing release fixes it, but your target, 8.0, does not run it"],
+  ])("calls the release a fixing release in its action, php %s (ruling W17-X3)", (requires, action) => {
+    expect(plain(card({}, requires).card?.action ?? [])).toBe(action);
   });
 });

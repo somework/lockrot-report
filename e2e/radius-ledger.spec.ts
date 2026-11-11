@@ -119,7 +119,9 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     await expect(radiusRow(page, "kphoen/rulerz-bundle")).toHaveAccessibleDescription(/\d+ flagged/);
     await expect(
       radiusRow(page, "kphoen/rulerz-bundle").locator('li[data-pkg="hoa/ruler"]'),
-    ).toHaveAccessibleDescription(new RegExp(`^score ${String(total)} ${verdict}$`, "i"));
+    ).toHaveAccessibleDescription(
+      new RegExp(`^score ${String(total)} ${verdict} Press Enter on a row to open its package\\.$`, "i"),
+    );
   });
 
   test("a #pkg= link to a listed package opens the first row that lists it, and only that one", async ({

@@ -211,6 +211,34 @@ describe("the Run tab rows", () => {
     ]);
   });
 
+  test.each([
+    "unloaded_name",
+    "offline",
+    "install_time_budget",
+    "no_composer_json",
+    "composer_json_invalid",
+    "platform_config_invalid",
+    "solver_error",
+    "lock_disabled",
+    "a_reason_this_renderer_does_not_know",
+  ])(
+    "print no solve row when the move check did not run at the target, reason %s (ruling W17-X3)",
+    (reason) => {
+      expect(windowRows(overridden("8.4", { baseline: "not_checked", reason }))).not.toContainEqual(
+        expect.stringContaining("the move check solves"),
+      );
+    },
+  );
+
+  test.each(["resolves", "refused"])(
+    "print the solve row when the move check ran at the target, baseline %s (ruling W17-X3)",
+    (baseline) => {
+      expect(windowRows(overridden("8.4", { baseline, reason: null }))).toContain(
+        "composer update solves at 7.4.29, and the move check solves at the target PHP 8.4.99.",
+      );
+    },
+  );
+
   test("print nothing without a window", () => {
     expect(windowRows({ run: { php_window: null } } as unknown as Report2)).toEqual([]);
   });

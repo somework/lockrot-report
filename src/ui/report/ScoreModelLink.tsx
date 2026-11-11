@@ -1,5 +1,7 @@
 import { RUN_WORDS } from "../../domain/runTab";
+import { linkHref } from "../../state/hash";
 import { useReport } from "../context";
+import { isPlainClick } from "../plainClick";
 import { jumpInDetail } from "./jumpInDetail";
 
 export const SCORE_SECTION_ID = "how-the-score-works";
@@ -10,8 +12,9 @@ export function ScoreModelLink() {
   return (
     <a
       className="score-model-link"
-      href={`#${SCORE_SECTION_ID}`}
+      href={linkHref({ view: "run", section: SCORE_SECTION_ID })}
       onClick={(event) => {
+        if (!isPlainClick(event)) return;
         event.preventDefault();
         dispatch({ type: "view", view: "run" });
         requestAnimationFrame(() => {

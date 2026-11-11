@@ -285,6 +285,23 @@ describe("the load line", () => {
     expect(sharePhrase(1, 8)).toBe("13%");
   });
 
+  test("rounds a decimal half up as Copy summary does", () => {
+    const report = run({
+      checked: 2,
+      flagged: 2,
+      counts: { high: 1, low: 1 },
+      findings: [
+        ["high", 23, 1],
+        ["low", 17, 1],
+      ],
+    });
+
+    expect(lines(report)[2]).toBe(
+      "40 points on 2 flagged packages · 23 (58 %) from high or worse · score model 1",
+    );
+    expect(sharePhrase(23, 40)).toBe("58%");
+  });
+
   test.each([
     [1, 200, "201 points on 2 flagged packages · 1 (1 %) from high or worse · score model 1"],
     [200, 1, "201 points on 2 flagged packages · 200 (99 %) from high or worse · score model 1"],

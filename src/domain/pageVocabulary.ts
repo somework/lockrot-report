@@ -136,6 +136,7 @@ export const CHECK_REASON_WORDS: readonly (readonly [reason: string, words: stri
   ["solver_error", "Composer's solver failed on it"],
   ["advisory_lookup_incomplete", "the advisory lookup did not cover a package in the result"],
   ["lock_disabled", "config.lock is false, so Composer ignores composer.lock"],
+  ["installs_no_release", "Composer's solver does not reach the release"],
 ];
 
 /** A reason's words; an unknown reason as written, in a code element (SPEC §7.9.21). */

@@ -52,7 +52,7 @@ describe("the Findings and Advisories tables", () => {
   test("announce their column heads, and give every row one cell per head", () => {
     render(<App model={model("composite")} />);
 
-    const findings = screen.getByRole("table", { name: "Findings" });
+    const findings = screen.getByRole("grid", { name: "Findings" });
     const heads = within(findings).getAllByRole("columnheader");
     expect(heads).toHaveLength(6);
     for (const name of ["Score", "Package", "Flags", "Years since release", "Reached", /^Next step/])
@@ -65,7 +65,7 @@ describe("the Findings and Advisories tables", () => {
     history.replaceState(null, "", "/report.html#view=advisories");
     render(<App model={model("composite")} />);
 
-    const table = screen.getByRole("table", { name: "Advisories" });
+    const table = screen.getByRole("grid", { name: "Advisories" });
     expect(
       within(table)
         .getAllByRole("columnheader")
@@ -79,11 +79,29 @@ describe("the Findings and Advisories tables", () => {
 });
 
 describe("the report-2 Findings tab", () => {
+  test("names the tab in a heading of its own, the grades one level under it", () => {
+    render(<App model={model("composite")} />);
+    const panel = document.querySelector('[data-surface="findings"]');
+
+    const headings = [...(panel?.querySelectorAll("h2, h3") ?? [])].map(
+      (h) => `${h.tagName} ${h.textContent}`,
+    );
+
+    expect(headings.slice(0, 2)).toEqual(["H2 Findings", "H3 critical"]);
+  });
+
+  test("names the tab when no finding is shown", () => {
+    history.replaceState(null, "", "/report.html#view=findings&q=no-such-package-anywhere");
+    render(<App model={model("composite")} />);
+
+    expect(screen.getByRole("heading", { level: 2, name: "Findings" })).toBeTruthy();
+  });
+
   test("groups the rows by grade, the grade as the head's word and the count beside it", () => {
     render(<App model={model("composite")} />);
 
     const heads = [...document.querySelectorAll(".fgroup-head")].map((head) => [
-      text(head, "h2"),
+      text(head, "h3"),
       text(head, ".fgroup-count"),
     ]);
     expect(heads).toEqual([
@@ -616,29 +634,5 @@ describe("the All packages table as a list", () => {
     expect(scores).toEqual([...scores].sort((a, b) => a - b));
     expect(screen.getByRole("columnheader", { name: /Score/ }).getAttribute("aria-sort")).toBe("ascending");
     expect(screen.getByRole("columnheader", { name: /Package/ }).getAttribute("aria-sort")).toBe("none");
-  });
-});
-
-// PD-ROWS-20, unverified with a screen reader: a row's role does not say that Enter opens it.
-describe("the row hint of a list", () => {
-  test.each([
-    ["findings", ".fledger"],
-    ["packages", "table.p2-table"],
-    ["radius", "ul.r2-list"],
-    ["advisories", ".aledger"],
-  ])("the %s list refers to the hidden hint", (view, list) => {
-    history.replaceState(null, "", `/report.html#view=${view}`);
-    render(<App model={model("composite")} />);
-    const containers = [...document.querySelectorAll(list)];
-    const hints = containers.map((node) => {
-      const id = node.getAttribute("aria-describedby") ?? "";
-      const hint = document.getElementById(id);
-      return { text: hint?.textContent, hidden: hint?.hidden };
-    });
-
-    expect(containers.length).toBeGreaterThan(0);
-    expect(new Set(hints.map((hint) => JSON.stringify(hint)))).toEqual(
-      new Set([JSON.stringify({ text: "Press Enter on a row to open its package.", hidden: true })]),
-    );
   });
 });

@@ -8,7 +8,7 @@ import { readingRich, verdictBlock } from "../../domain/verdictBlock";
 import { toneClass } from "../common/common";
 import { DisclosureButton } from "../common/Disclosure";
 import { usePrinted } from "../print/printContext";
-import { jumpTo, RichText, type JumpIds } from "./RichText";
+import { JumpLink, RichText, type JumpIds } from "./RichText";
 
 const Name = ({ name }: { name: string }) => <span className="d3-name">{name}</span>;
 
@@ -160,15 +160,7 @@ export function VerdictBlock({
       </p>
       {inline?.jump != null && jumps.branches !== undefined && (
         <p className="d3-verdict-jump d3-jump">
-          <a
-            className="lnk"
-            href={`#${jumps.branches}`}
-            onClick={(event) => {
-              if (jumps.branches !== undefined) jumpTo(event, jumps.branches);
-            }}
-          >
-            {inline.jump}
-          </a>
+          <JumpLink to={jumps.branches}>{inline.jump}</JumpLink>
         </p>
       )}
       {block.readings.length > 0 && (

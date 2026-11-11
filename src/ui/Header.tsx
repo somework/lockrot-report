@@ -49,11 +49,6 @@ export interface HeaderProps {
   inert?: boolean;
 }
 
-/**
- * The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
- * page-wide controls (legacy report.html:26-42).
- */
-/** SPEC §7.9.11, R16-9b, R16-9c: one fact for both dates, no wider than the rc.16 "data as of". */
 function HeaderDates({ dataDate, generatedAt }: { dataDate: string | null; generatedAt: string }) {
   const ages = <b className="mono">{day(generatedAt)}</b>;
   if (dataDate === null)
@@ -75,6 +70,8 @@ function HeaderDates({ dataDate, generatedAt }: { dataDate: string | null; gener
   );
 }
 
+/** The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
+ *  page-wide controls. */
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
   const { run, lockrot, data_date, generated_at } = model.report;

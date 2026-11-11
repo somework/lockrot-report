@@ -1825,6 +1825,25 @@
       "Tripped by left-behind"
     ]
   },
+  "gets-replace-held-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through:",
+      "incenteev/composer-parameter-handler",
+      "nelmio/api-doc-bundle",
+      "php-amqplib/rabbitmq-bundle"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "github-archived-unread-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2121,6 +2140,24 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "libyears-prerelease-undated-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "local-path-advisory": {
     "reach": [
       "Production: not in packages-dev",
@@ -2156,6 +2193,24 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by abandoned"
+    ]
+  },
+  "lock-out-of-sync-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "j0k3r/graby",
+      "sentry/sentry-symfony"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "long-range-dagger": {
@@ -2930,6 +2985,41 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "move-check-dev-tag-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "move-check-dev-update-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "j0k3r/graby",
+      "sentry/sentry-symfony"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "not-found-cached-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -3245,6 +3335,21 @@
     "origin": null,
     "not_judged": null,
     "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "php-tuf-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": "Its release age (S2), PHP promise (S5) and release branch (S8) are not judged: lockrot could read no release metadata (it is not installed from a Composer repository)",
+    "unchecked": [
+      "Release age (S2), archived repository (S3), repository activity (S4), PHP promise (S5) and release branch (S8) not checked (not from a Composer repository)"
+    ],
     "not_run": [],
     "php": null,
     "php_edge": [],
