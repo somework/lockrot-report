@@ -23,3 +23,8 @@ export async function radiusKids(page: Page, pkg: string): Promise<string[]> {
     .locator("li.r2-kid")
     .evaluateAll((rows) => rows.map((row) => row.getAttribute("data-pkg") ?? ""));
 }
+
+/** The fold buttons of the requirement rows, by role and by the name that says what they show. */
+export function radiusToggles(page: Page): Locator {
+  return radiusSurface(page).getByRole("button", { name: /^The \d+ packages? listed under / });
+}

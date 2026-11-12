@@ -141,6 +141,11 @@ export class NewReportPage implements ReportPage {
     await this.page.getByRole("button", { name: "Clear", exact: true }).click();
   }
 
+  /** The page's first Tab stop, `role=link`, named for where it moves focus. */
+  skipLink(): Locator {
+    return this.page.getByRole("link", { name: /^Skip to the / });
+  }
+
   /** The status line is a live region (`role=status`, matching legacy's `role="status"`); its
    *  accessible name/content is read directly rather than through a specific id. */
   async countLine(): Promise<string | null> {

@@ -3,6 +3,7 @@
  * layout the sheet that covers the page is a modal dialog to assistive technology.
  */
 import { expect, test } from "@playwright/test";
+import { NewReportPage } from "./support/new";
 import { report2Url } from "./support/pages";
 
 test("the first Tab reaches the skip link, which moves focus to the list's Tab stop row", async ({
@@ -33,13 +34,15 @@ test("on a Blast radius view with no item, the skip link names the content, as t
   page,
 }) => {
   // Case A flags one direct requirement, and exposure[] lists none (R19-15, R19-23).
-  await page.goto(report2Url("A") + "#view=radius");
-  await expect(page.locator(".count-line")).toHaveText(
-    "0 of 0 direct requirements that pull in flagged packages",
-  );
+  const report = new NewReportPage(page);
+  await report.gotoReport2WithHash("A", "#view=radius");
+  await expect
+    .poll(() => report.countLine())
+    .toBe("0 of 0 direct requirements that pull in flagged packages");
   await page.keyboard.press("Tab");
+  await expect(report.skipLink()).toHaveAccessibleName("Skip to the content");
 
-  await page.getByRole("link", { name: "Skip to the content" }).press("Enter");
+  await report.skipLink().press("Enter");
 
   await expect(page.getByRole("tabpanel")).toBeFocused();
 });
@@ -47,13 +50,15 @@ test("on a Blast radius view with no item, the skip link names the content, as t
 test("on a Blast radius view with items, the skip link names the list, also while the search hides every row", async ({
   page,
 }) => {
-  await page.goto(report2Url("composite") + "#view=radius");
-  await page.getByRole("searchbox").fill("no-such-package");
-  await expect(page.locator(".count-line")).toContainText(
-    "0 of 2 direct requirements that pull in flagged packages",
-  );
+  const report = new NewReportPage(page);
+  await report.gotoReport2WithHash("composite", "#view=radius");
 
-  await expect(page.getByRole("link", { name: "Skip to the list" })).toBeAttached();
+  await report.search("no-such-package");
+
+  await expect
+    .poll(() => report.countLine())
+    .toContain("0 of 2 direct requirements that pull in flagged packages");
+  await expect(report.skipLink()).toHaveAccessibleName("Skip to the list");
 });
 
 // The split layout starts at 1000 px, so 999 px is the widest sheet.

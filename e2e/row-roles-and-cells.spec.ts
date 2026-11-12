@@ -7,6 +7,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
+import { radiusSurface, radiusToggles } from "./support/report2/radius";
 
 const CASE = "composite";
 
@@ -125,8 +126,8 @@ test("a listed package with packages drawn under it is an unfolded item whose ke
   page,
 }) => {
   await page.goto(`${report2Url("baselined-wallabag-2.6")}#view=radius`);
-  const surface = page.locator('[data-surface="radius"]');
-  for (const toggle of await surface.locator(".r2-tog").filter({ visible: true }).all()) {
+  const surface = radiusSurface(page);
+  for (const toggle of await radiusToggles(page).filter({ visible: true }).all()) {
     if ((await toggle.getAttribute("aria-expanded")) === "false") await toggle.click();
   }
   const deeper = surface.locator('[role="treeitem"][aria-level="3"]').first();
