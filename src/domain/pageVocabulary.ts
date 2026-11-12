@@ -103,6 +103,7 @@ export const zeroVerdictMark = (verdict: string): ZeroVerdictMark | null =>
 const SKIPPED_CHECKS: Words = {
   repository_activity: "its repository activity",
   repository_archived: "its archived flag",
+  repository_push: "its push date",
   release_metadata: "its release metadata",
   advisories: "its advisories",
   release_branch: "its release branch",

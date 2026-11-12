@@ -1,7 +1,14 @@
 import { describe, expect, test } from "vitest";
 
 import { differencesFromModel } from "./modelDifferences";
-import { lockrotRecordings, modelCases, modelOnlyNames, recordedCases } from "./recorded";
+import {
+  lockrotRecordings,
+  MODEL_LAGS,
+  modelCases,
+  modelOnlyNames,
+  pinnedModelCases,
+  recordedCases,
+} from "./recorded";
 
 describe("the comparison with lockrot's recording (R4-19)", () => {
   const modelOnly = modelOnlyNames();
@@ -38,5 +45,27 @@ describe("a case recording that holds its parents' findings (R5-19)", () => {
 
   test.each(multi)("$name is compared on the case package's finding", ({ name, finding }) => {
     expect(recorded.get(name)?.finding.package).toBe(finding.package);
+  });
+});
+
+describe("a model golden that the pinned model gets wrong", () => {
+  test("reads the corrected words, and the pinned model still prints the listed wrong words", () => {
+    const raw = new Map(pinnedModelCases().map(({ id, golden }) => [id, golden]));
+    const fixed = new Map(modelCases().map(({ id, golden }) => [id, golden]));
+    const lines = (golden: { checks: string; why: string[] } | undefined): string[] =>
+      golden === undefined ? [] : [golden.checks, ...golden.why];
+
+    const stale = MODEL_LAGS.filter(
+      ({ id, from }) => !lines(raw.get(id)).some((line) => line.includes(from)),
+    );
+    const left = MODEL_LAGS.filter(({ id, from }) =>
+      lines(fixed.get(id)).some((line) => line.includes(from)),
+    );
+
+    expect({ stale, left }).toEqual({ stale: [], left: [] });
+    expect(fixed.get("push-undated‡")?.checks).toBe(
+      "4 fired (S1, S2, S3, S5) · 6 quiet · S4 not run (no date)",
+    );
+    expect(fixed.get("push-undated‡")?.why[6]).toBe("checks not run: its push date (no date)");
   });
 });
