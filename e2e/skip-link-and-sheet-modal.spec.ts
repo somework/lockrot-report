@@ -44,6 +44,18 @@ test("on a Blast radius view with no item, the skip link names the content, as t
   await expect(page.getByRole("tabpanel")).toBeFocused();
 });
 
+test("on a Blast radius view with items, the skip link names the list, also while the search hides every row", async ({
+  page,
+}) => {
+  await page.goto(report2Url("composite") + "#view=radius");
+  await page.getByRole("searchbox").fill("no-such-package");
+  await expect(page.locator(".count-line")).toContainText(
+    "0 of 2 direct requirements that pull in flagged packages",
+  );
+
+  await expect(page.getByRole("link", { name: "Skip to the list" })).toBeAttached();
+});
+
 // The split layout starts at 1000 px, so 999 px is the widest sheet.
 for (const width of [999, 768]) {
   test(`at ${String(width)} px the open sheet is a modal dialog named for its package`, async ({ page }) => {

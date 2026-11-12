@@ -49,9 +49,9 @@ describe.each([["findings"], ["advisories"], ["packages"]])("a focusable row on 
     expect(rows.filter((row) => row.getAttribute("role") !== "row").map((row) => row.dataset.pkg)).toEqual(
       [],
     );
-    expect(rows.filter((row) => row.closest('[role="treegrid"]') === null).map((row) => row.dataset.pkg)).toEqual(
-      [],
-    );
+    expect(
+      rows.filter((row) => row.closest('[role="treegrid"]') === null).map((row) => row.dataset.pkg),
+    ).toEqual([]);
   });
 });
 

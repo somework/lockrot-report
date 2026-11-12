@@ -17,8 +17,11 @@ export function sideStep(key: string, target: Element | null): SideStep | null {
   if (role === "treeitem") return treeStep(target, right);
   const row = target.closest<HTMLElement>('[role="treegrid"] [role="row"][data-pkg]');
   if (row === null) return null;
-  const cells = [...row.querySelectorAll<HTMLElement>('[role="gridcell"]')];
   const cell = target.closest<HTMLElement>('[role="gridcell"]');
+  // An empty cell has nothing to read, and on a narrow screen it is clipped to a pixel.
+  const cells = [...row.querySelectorAll<HTMLElement>('[role="gridcell"]')].filter(
+    (each) => each === cell || each.hasAttribute("aria-label") || each.textContent.trim() !== "",
+  );
   const at = cell === null ? -1 : cells.indexOf(cell);
   const next = right ? cells[at + 1] : at === 0 ? row : cells[at - 1];
 
@@ -34,7 +37,18 @@ function treeStep(item: Element, right: boolean): SideStep {
     const child = item.querySelector<HTMLElement>(':scope > [role="group"] > [role="treeitem"]');
     return child === null ? STAY : { focus: child };
   }
-  const parent = right ? null : item.parentElement?.closest<HTMLElement>('[role="treeitem"]');
+  if (right) return STAY;
+  const parent = drawnUnder(item) ?? item.parentElement?.closest<HTMLElement>('[role="treeitem"]');
 
   return parent === null || parent === undefined ? STAY : { focus: parent };
+}
+
+/** The listed item that a deeper item is drawn under: the nearest earlier sibling one level up. */
+function drawnUnder(item: Element): HTMLElement | null {
+  const level = Number(item.getAttribute("aria-level"));
+  for (let prev = item.previousElementSibling; prev !== null; prev = prev.previousElementSibling) {
+    if (Number(prev.getAttribute("aria-level")) < level && prev instanceof HTMLElement) return prev;
+  }
+
+  return null;
 }

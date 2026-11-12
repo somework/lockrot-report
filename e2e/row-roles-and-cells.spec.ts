@@ -56,6 +56,7 @@ for (const [view, name] of [
       await page.keyboard.press("ArrowLeft");
 
       await expect(row).toBeFocused();
+      await expect(row.locator('[role="gridcell"][tabindex]')).toHaveCount(0);
     });
 
     test("Enter on a cell opens the row's package", async ({ page }) => {
@@ -116,6 +117,7 @@ test.describe("the Blast radius tree", () => {
     await page.keyboard.press("ArrowLeft");
 
     await expect(row).toBeFocused();
+    await expect(kid).toHaveAttribute("aria-level", "2");
   });
 });
 

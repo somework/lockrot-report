@@ -6,13 +6,13 @@ const parse = (html: string): HTMLElement => new DOMParser().parseFromString(htm
 
 const grid = (): HTMLElement =>
   parse(`<div role="treegrid"><div role="row" data-pkg="a/a" tabindex="0">
-      <span role="gridcell">1</span><span role="gridcell"><a href="#x">link</a></span><span role="gridcell">3</span>
+      <span role="gridcell">1</span><span role="gridcell"><a href="#x">link</a></span><span role="gridcell"></span><span role="gridcell" aria-label="3 years"></span>
     </div></div>`);
 
 const tree = (expanded: boolean): HTMLElement =>
   parse(`<ul role="tree"><li role="treeitem" data-pkg="r/r" aria-expanded="${String(expanded)}" tabindex="0">
       <div><button type="button" aria-expanded="${String(expanded)}">t</button></div>
-      <ul role="group"><li role="treeitem" data-pkg="k/k" tabindex="-1">kid</li></ul>
+      <ul role="group"><li role="treeitem" data-pkg="k/k" aria-level="2" tabindex="-1">kid</li><li role="treeitem" data-pkg="g/g" aria-level="3" tabindex="-1">grandkid</li></ul>
     </li><li role="treeitem" data-pkg="s/s" tabindex="-1">single</li></ul>`);
 
 const at = (root: HTMLElement, selector: string): HTMLElement =>
@@ -27,12 +27,12 @@ describe("sideStep in a treegrid row", () => {
     expect(sideStep("ArrowRight", cells[0] ?? null)).toEqual({ focus: cells[1] });
   });
 
-  test("ArrowRight on the last cell stays, ArrowLeft goes back and from the first cell to the row", () => {
+  test("ArrowRight on the last cell stays, ArrowLeft goes back past an empty cell and from the first cell to the row", () => {
     const root = grid();
     const cells = root.querySelectorAll<HTMLElement>('[role="gridcell"]');
 
-    expect(sideStep("ArrowRight", cells[2] ?? null)).toEqual({ stay: true });
-    expect(sideStep("ArrowLeft", cells[2] ?? null)).toEqual({ focus: cells[1] });
+    expect(sideStep("ArrowRight", cells[3] ?? null)).toEqual({ stay: true });
+    expect(sideStep("ArrowLeft", cells[3] ?? null)).toEqual({ focus: cells[1] });
     expect(sideStep("ArrowLeft", cells[0] ?? null)).toEqual({ focus: at(root, '[role="row"]') });
     expect(sideStep("ArrowLeft", at(root, '[role="row"]'))).toEqual({ stay: true });
   });
@@ -41,7 +41,7 @@ describe("sideStep in a treegrid row", () => {
     const root = grid();
     const cells = root.querySelectorAll<HTMLElement>('[role="gridcell"]');
 
-    expect(sideStep("ArrowRight", at(root, "a"))).toEqual({ focus: cells[2] });
+    expect(sideStep("ArrowRight", at(root, "a"))).toEqual({ focus: cells[3] });
   });
 
   test("leaves any other key, and an element outside a treegrid row, to the page", () => {
@@ -68,6 +68,14 @@ describe("sideStep in a tree", () => {
     expect(sideStep("ArrowLeft", at(open, '[data-pkg="r/r"]'))).toEqual({ toggle: at(open, "button") });
     expect(sideStep("ArrowLeft", at(open, '[data-pkg="k/k"]'))).toEqual({
       focus: at(open, '[data-pkg="r/r"]'),
+    });
+  });
+
+  test("ArrowLeft from an item drawn under another listed item goes to that item", () => {
+    const open = tree(true);
+
+    expect(sideStep("ArrowLeft", at(open, '[data-pkg="g/g"]'))).toEqual({
+      focus: at(open, '[data-pkg="k/k"]'),
     });
   });
 

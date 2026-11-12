@@ -59,6 +59,7 @@ function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
   return (
     <li
       role="treeitem"
+      aria-level={depth + 2}
       className={`r2-kid ${toneClass(gradeTone(finding.verdict))}`}
       style={{ "--depth": String(depth) }}
       data-pkg={finding.package}

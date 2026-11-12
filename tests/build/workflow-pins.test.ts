@@ -16,12 +16,18 @@ const usesLines = (): string[] =>
         .map((line) => `${name}: ${line.trim()}`),
     );
 
-// A tag can move; the release job attests what it runs, and lockrot trusts that attestation.
-test("every workflow action is pinned by a full commit SHA with its version in a comment", () => {
+// A tag can move. The release job attests what it runs, and lockrot trusts that attestation.
+test("every third-party workflow action is pinned by a full commit SHA with its version in a comment", () => {
   const lines = usesLines();
 
   expect(lines.length).toBeGreaterThan(0);
-  expect(lines.filter((line) => !/uses: [\w.-]+\/[\w./-]+@[0-9a-f]{40} # v?\d+\.\d+\.\d+$/.test(line))).toEqual(
+  const thirdParty = lines.filter((line) => !/uses: \.\//.test(line));
+  expect(
+    thirdParty.filter(
+      (line) =>
+        !/uses: ([\w.-]+\/[\w./-]+@[0-9a-f]{40}|docker:\/\/\S+@sha256:[0-9a-f]{64}) # v?\d+\.\d+\.\d+$/.test(line),
+    ),
+  ).toEqual(
     [],
   );
 });

@@ -235,17 +235,20 @@ function applySide(step: SideStep): void {
 }
 
 function holdFocus(target: HTMLElement): void {
-  if (!target.hasAttribute("tabindex")) {
-    target.tabIndex = -1;
-    target.addEventListener(
-      "blur",
-      () => {
-        target.removeAttribute("tabindex");
-      },
-      { once: true },
-    );
-  }
+  const added = !target.hasAttribute("tabindex");
+  if (added) target.tabIndex = -1;
   focusRow(target);
+  if (!added) return;
+  if (document.activeElement !== target) {
+    target.removeAttribute("tabindex");
+    return;
+  }
+  // A window switch blurs the cell and leaves it focused; only a real move of focus ends the hold.
+  const release = () => {
+    if (document.activeElement === target) target.addEventListener("blur", release, { once: true });
+    else target.removeAttribute("tabindex");
+  };
+  target.addEventListener("blur", release, { once: true });
 }
 
 /** One document keydown listener that reads the latest page state through a ref. A layout effect,
@@ -464,9 +467,9 @@ export function App({ model, title }: { model: Model; title?: string | undefined
     const opened = openedByReader.current;
     openedByReader.current = false;
     setOpenNote(opened && !sheet && state.pkg !== null ? openedBesideList(state.pkg) : "");
-    // A clicked row holds focus: remember which of its package's rows it was.
-    const active = document.activeElement;
-    if (active instanceof HTMLElement && state.pkg !== null && active.getAttribute("data-pkg") === state.pkg)
+    // A clicked row, or a cell of it, holds focus: remember which of its package's rows it was.
+    const active = document.activeElement?.closest<HTMLElement>("[data-pkg]") ?? null;
+    if (active !== null && state.pkg !== null && active.getAttribute("data-pkg") === state.pkg)
       lastRow.current = { pkg: state.pkg, index: rowPosition(document, active) };
 
     if (request?.kind === "search") {

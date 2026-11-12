@@ -44,6 +44,19 @@ describe("on a Findings row", () => {
     expect(first?.hasAttribute("tabindex")).toBe(false);
   });
 
+  test("a cell keeps its tabindex through a blur that leaves it focused, as a window switch does", () => {
+    open("findings");
+    const row = document.querySelector<HTMLElement>('[role="row"][data-pkg][tabindex="0"]');
+    row?.focus();
+    press("ArrowRight");
+    const cell = document.activeElement;
+
+    cell?.dispatchEvent(new FocusEvent("blur"));
+
+    expect(document.activeElement).toBe(cell);
+    expect(cell?.getAttribute("tabindex")).toBe("-1");
+  });
+
   test("leaves ArrowRight with a modifier to the browser", () => {
     open("findings");
     const row = document.querySelector<HTMLElement>('[role="row"][data-pkg][tabindex="0"]');
@@ -72,5 +85,24 @@ describe("on a Blast radius row", () => {
     press("ArrowLeft");
 
     expect(same()?.getAttribute("aria-expanded")).toBe("false");
+  });
+});
+
+describe("on an Advisories package with two rows", () => {
+  test("Escape after Enter on a cell gives focus back to the row the reader acted on", () => {
+    open("advisories");
+    const rows = [...document.querySelectorAll<HTMLElement>('[role="row"][data-pkg="twig/twig"]')];
+    const [first, second] = rows;
+    if (first === undefined || second === undefined) throw new Error("twig/twig has two advisory rows");
+    second.focus();
+    fireEvent.click(second);
+    press("Escape");
+    first.focus();
+    press("ArrowRight");
+
+    press("Enter");
+    press("Escape");
+
+    expect(document.activeElement).toBe(first);
   });
 });
