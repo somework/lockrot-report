@@ -320,8 +320,8 @@ function AdvisoryHead() {
 }
 
 /** The Advisories tab of a report-2 document: on screen the Security block with the tab's answer,
- *  on paper the answer alone (the printed summary holds the block); then every S9 row, grouped by
- *  the fix it takes. Rows keep `applyFilters2` order inside a group. */
+ *  on paper the answer alone (the printed summary holds the block); then every S9 row, one group
+ *  per package in `rank` order. Rows keep `applyFilters2` order inside a group. */
 export function AdvisoriesView2() {
   const { state } = useReport();
   const { report } = useReport2();
