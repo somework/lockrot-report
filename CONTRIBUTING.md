@@ -72,6 +72,9 @@ docker run --rm -v "$PWD":/work -v lockrot-report-nm:/work/node_modules -w /work
 - `src/model/normalize.ts` is the one place that reads the raw document. The page reads report-2
   only, and a report-1 document stops there, at the report-1 screen.
 - `src/template.html` is excluded from prettier: consumers match its tags byte for byte.
+- Every `uses:` in `.github/workflows/` names a full commit SHA, with its version in a comment.
+  Dependabot moves both. lockrot trusts the release job's attestation, so a tag that moves must not
+  change what that job runs.
 
 ## Fixtures
 
