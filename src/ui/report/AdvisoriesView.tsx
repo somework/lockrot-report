@@ -104,7 +104,7 @@ function Affects({ range, tabIndex }: { range: string | null; tabIndex: -1 | und
   const affects = advisoryAffects(range);
   if (printed && affects?.folded != null) {
     return (
-      <span className="ac-aff" role="cell">
+      <span className="ac-aff" role="gridcell">
         <span className="ac-lbl" aria-hidden="true">
           {ADVISORY_HEAD.affects}{" "}
         </span>
@@ -122,7 +122,7 @@ function Affects({ range, tabIndex }: { range: string | null; tabIndex: -1 | und
     );
   }
   return (
-    <span className="ac-aff" role="cell">
+    <span className="ac-aff" role="gridcell">
       <span className="ac-lbl" aria-hidden="true">
         {ADVISORY_HEAD.affects}{" "}
       </span>
@@ -178,7 +178,7 @@ function AdvisoryRow2({
     >
       <span
         className="ac-sev"
-        role="cell"
+        role="gridcell"
         aria-label={countedAs === null ? row.severity : `${row.severity} ${countedAs}`}
       >
         <span className="ac-lbl ac-sev-lbl" aria-hidden="true">
@@ -188,12 +188,12 @@ function AdvisoryRow2({
         {countedAs !== null && <span className="ac-counted">{countedAs}</span>}
       </span>
       {/* One cell under the Advisory head: the title and the ids keep grid places of their own. */}
-      <span className="ac-adv" role="cell">
+      <span className="ac-adv" role="gridcell">
         <span className="ac-title">{row.title ?? row.id}</span>
         <Ids pair={pair} sameAs={sameAs} tabIndex={inner} />
       </span>
       <Affects range={row.affected_versions} tabIndex={inner} />
-      <span className={fix.version === null ? "ac-fix is-none" : "ac-fix"} role="cell">
+      <span className={fix.version === null ? "ac-fix is-none" : "ac-fix"} role="gridcell">
         {fix.version !== null && (
           <>
             <span className="ac-lbl" aria-hidden="true">
@@ -226,7 +226,7 @@ function Group({ group, run, first }: { group: AdvisoryGroup2; run: Run; first: 
   return (
     <section className={`advgroup ${toneClass(gradeTone(finding.verdict))}`}>
       <div className="al-group-head" role="row">
-        <span className="al-span-cell" role="cell" aria-colspan={ADVISORY_COLUMNS}>
+        <span className="al-span-cell" role="gridcell" aria-colspan={ADVISORY_COLUMNS}>
           <h3>
             {finding.package} <Version version={finding.version} className="ac-ver" />
           </h3>
@@ -320,8 +320,8 @@ function AdvisoryHead() {
 }
 
 /** The Advisories tab of a report-2 document: on screen the Security block with the tab's answer,
- *  on paper the answer alone (the printed summary holds the block); then every S9 row, grouped by
- *  the fix it takes. Rows keep `applyFilters2` order inside a group. */
+ *  on paper the answer alone (the printed summary holds the block); then every S9 row, one group
+ *  per package in `rank` order. Rows keep `applyFilters2` order inside a group. */
 export function AdvisoriesView2() {
   const { state } = useReport();
   const { report } = useReport2();
@@ -372,7 +372,7 @@ export function AdvisoriesView2() {
             </div>
           )}
           <RowHint id={hintId} />
-          <div className="aledger no-axis" role="grid" aria-readonly="true" aria-label="Advisories">
+          <div className="aledger no-axis" role="treegrid" aria-readonly="true" aria-label="Advisories">
             <AdvisoryHead />
             <RowHintContext.Provider value={hintId}>
               {groups.map((group) => (

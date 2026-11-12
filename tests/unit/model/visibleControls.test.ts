@@ -13,12 +13,24 @@ describe("visibleControls writes a character that reorders or hides text as a vi
       "dev-main\\u{202E}0.0.1 \\u{202C}",
     ],
     ["an isolate pair", "\u2067acme\u2069", "\\u{2067}acme\\u{2069}"],
-    ["the marks", "1\u200E2\u200F3\u061C", "1\\u{200E}2\\u{200F}3\\u{61C}"],
+    ["the marks", "1\u200E2\u200F3\u061C", "1\\u{200E}2\\u{200F}3\\u{061C}"],
     ["a zero-width space and joiner", "acme/\u200Bfoo\u200D", "acme/\\u{200B}foo\\u{200D}"],
-    ["a byte-order mark and a soft hyphen", "\uFEFFv1\u00AD", "\\u{FEFF}v1\\u{AD}"],
+    ["a byte-order mark and a soft hyphen", "\uFEFFv1\u00AD", "\\u{FEFF}v1\\u{00AD}"],
     ["a tag character outside the BMP", "x\u{E0041}", "x\\u{E0041}"],
   ])("%s", (_label, text, shown) => {
     expect(visibleControls(text)).toBe(shown);
+  });
+
+  test.each([
+    [
+      "every bidi control",
+      "\u061C\u200E\u200F\u202A\u202B\u202C\u202D\u2066\u2067\u2068\u2069",
+      "\\u{061C}\\u{200E}\\u{200F}\\u{202A}\\u{202B}\\u{202C}\\u{202D}\\u{2066}\\u{2067}\\u{2068}\\u{2069}",
+    ],
+    ["a soft hyphen", "a\u00ADb", "a\\u{00AD}b"],
+  ])("writes %s as lockrot's text formats print it", (_label, text, lockrotForm) => {
+    // lockrot's form is sprintf('\\u{%04X}'), held by lockrot's TerminalTextTest with these pairs.
+    expect(visibleControls(text)).toBe(lockrotForm);
   });
 
   test("keeps letters of every script, accents and symbols as they are", () => {

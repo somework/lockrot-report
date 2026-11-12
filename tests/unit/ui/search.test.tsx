@@ -151,7 +151,7 @@ describe("SearchBar", () => {
   it("counts the Blast radius tab in the direct requirements on the exposure list (R12)", () => {
     renderBar(composite(), { ...FINDINGS, view: "radius" });
 
-    expect(countLine()).toBe("2 of 2 direct requirements");
+    expect(countLine()).toBe("2 of 2 direct requirements that pull in flagged packages");
   });
 
   it("counts no direct requirement on Blast radius when nothing is flagged, whatever exposure[] holds (R13-12)", () => {
@@ -163,7 +163,7 @@ describe("SearchBar", () => {
 
     renderBar(result.model, { ...FINDINGS, view: "radius" });
 
-    expect(countLine()).toBe("0 of 0 direct requirements");
+    expect(countLine()).toBe("0 of 0 direct requirements that pull in flagged packages");
   });
 
   it("hides the search box and hint, but keeps the count line, on a report with nothing flagged", () => {

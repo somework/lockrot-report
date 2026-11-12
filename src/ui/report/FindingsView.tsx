@@ -127,7 +127,7 @@ function SpanRow({
 }) {
   return (
     <div className={className} role="row">
-      <span className="f2-span-cell" role="cell" aria-colspan={FINDINGS_COLUMNS} aria-label={label}>
+      <span className="f2-span-cell" role="gridcell" aria-colspan={FINDINGS_COLUMNS} aria-label={label}>
         {children}
       </span>
     </div>
@@ -268,7 +268,7 @@ export function FindingsView2() {
       ) : (
         <>
           {platform !== null && <p className="f2-platform">{platform}</p>}
-          <div className="fledger f2-ledger" role="grid" aria-readonly="true" aria-label={FINDINGS_TAB}>
+          <div className="fledger f2-ledger" role="treegrid" aria-readonly="true" aria-label={FINDINGS_TAB}>
             {!printed && <ColumnHead run={report.run} axis={axis} onScreen />}
             <RowHintContext.Provider value={hintId}>
               {byGrade(rows).map((group) => (

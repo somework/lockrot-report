@@ -111,8 +111,31 @@ export function lockrotRecordings(): RecordedCase[] {
   return recordedCases().filter(({ recordedBy }) => recordedBy === "lockrot");
 }
 
-/** The model's own inputs, each case under the name lockrot records it by. */
+/** Words in a golden of the pinned model that MODEL r18 calls a model bug. The page keeps the SPEC
+ *  words, and the comparison reads the golden with `to` for `from`. Empty the list at the repin whose
+ *  model prints `to`. */
+export const MODEL_LAGS: readonly { id: string; from: string; to: string }[] = [
+  // The model's check-reason vocabulary has no `undated`, so it prints the id (SPEC §7.9.21: "no date").
+  { id: "push-undated‡", from: "(undated)", to: "(no date)" },
+];
+
+/** The model's own inputs with each `MODEL_LAGS` entry corrected, under the names lockrot records. */
 export function modelCases(): ModelCase[] {
+  return pinnedModelCases().map((model) => {
+    const lags = MODEL_LAGS.filter(({ id }) => id === model.id);
+    const fix = (line: string): string =>
+      lags.reduce((text, { from, to }) => text.replaceAll(from, to), line);
+    return lags.length === 0
+      ? model
+      : {
+          ...model,
+          golden: { ...model.golden, checks: fix(model.golden.checks), why: model.golden.why.map(fix) },
+        };
+  });
+}
+
+/** The model's own inputs as the pinned bundle records them. */
+export function pinnedModelCases(): ModelCase[] {
   const { cases } = JSON.parse(readFileSync(join(FIXTURES, "flags", "cases.json"), "utf8")) as {
     cases: (Omit<ModelCase, "name" | "metadata"> & {
       details: { metadata: RepositoryMetadata | null } | null;

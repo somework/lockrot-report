@@ -230,6 +230,7 @@ describe("the small tables", () => {
       "x",
     ]);
     expect(skippedCheckWord("release_dates")).toBe("its release dates");
+    expect(skippedCheckWord("repository_push")).toBe("its push date");
     expect(["release_dates", "repository_activity", "x"].map(missingCheckWord)).toEqual([
       "release dates",
       "its repository activity",

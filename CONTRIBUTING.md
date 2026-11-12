@@ -72,6 +72,9 @@ docker run --rm -v "$PWD":/work -v lockrot-report-nm:/work/node_modules -w /work
 - `src/model/normalize.ts` is the one place that reads the raw document. The page reads report-2
   only, and a report-1 document stops there, at the report-1 screen.
 - `src/template.html` is excluded from prettier: consumers match its tags byte for byte.
+- Every `uses:` in `.github/workflows/` names a full commit SHA, with its version in a comment.
+  Dependabot moves both. lockrot trusts the release job's attestation, so a tag that moves must not
+  change what that job runs.
 
 ## Fixtures
 
@@ -88,8 +91,8 @@ the report-1 screen.
    exists, a bullet that changes behaviour the entry already describes replaces that line, and is not
    added beside it. A bullet that removes behaviour that no final release had removes that line and
    adds nothing, because the entry compares with the previous final release. No line names a
-   pre-release. Set `version` in
-   `package.json` and both `version` fields of `package-lock.json` (the root and `packages[""]`)
+   pre-release. The version heading stays undated until the final release commit of step 3. Set
+   `version` in `package.json` and both `version` fields of `package-lock.json` (the root and `packages[""]`)
    to the same number. `npm version <version> --no-git-tag-version` sets all three.
 2. Pick the pin. A pre-release pins the lockrot commit that changes the contract bundle. A final
    tag pins the lockrot commit V that vendors an rc of the same bundle. Lockrot's main or a lockrot
@@ -102,8 +105,10 @@ the report-1 screen.
 3. Run `node scripts/contract.mjs repin <pin>`. For a final tag, commit only the version and the
    pin: `package.json`, the two `version` fields of `package-lock.json`, the CHANGELOG heading and
    `contract/lockrot.json`. If `repin` changed another file under `contract/`, V does not vendor
-   the same bundle, so stop. Merge the commit into main for a final tag, or into its release branch
-   for a pre-release.
+   the same bundle, so stop. For a final tag, that commit also dates the CHANGELOG heading with the
+   release day, the UTC day of the tag: `## [X.Y.Z] - YYYY-MM-DD`, as Keep a Changelog asks. A
+   pre-release leaves the heading undated. Merge the commit into main for a final tag, or into its
+   release branch for a pre-release.
 4. Before the first final tag, list the rulesets with `gh api repos/somework/lockrot-report/rulesets`.
    The list leaves out each ruleset's conditions and rules, so read each one with
    `gh api repos/somework/lockrot-report/rulesets/<id>`. Confirm that a tag ruleset on

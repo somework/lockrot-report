@@ -7,7 +7,10 @@
 const HIDDEN = /[\p{Bidi_Control}\p{Default_Ignorable_Code_Point}]/gu;
 
 export const visibleControls = (text: string): string =>
-  text.replace(HIDDEN, (ch) => `\\u{${(ch.codePointAt(0) ?? 0).toString(16).toUpperCase()}}`);
+  text.replace(
+    HIDDEN,
+    (ch) => `\\u{${(ch.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, "0")}}`,
+  );
 
 /** A copy of parsed JSON with `visibleControls` applied to every string, object keys included. */
 export function visibleData(value: unknown): unknown {

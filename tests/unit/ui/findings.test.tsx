@@ -52,28 +52,28 @@ describe("the Findings and Advisories tables", () => {
   test("announce their column heads, and give every row one cell per head", () => {
     render(<App model={model("composite")} />);
 
-    const findings = screen.getByRole("grid", { name: "Findings" });
+    const findings = screen.getByRole("treegrid", { name: "Findings" });
     const heads = within(findings).getAllByRole("columnheader");
     expect(heads).toHaveLength(6);
     for (const name of ["Score", "Package", "Flags", "Years since release", "Reached", /^Next step/])
       expect(within(findings).getByRole("columnheader", { name })).toBeTruthy();
     for (const row of findings.querySelectorAll('[role="row"][data-pkg]'))
-      expect(row.querySelectorAll(':scope > [role="cell"]')).toHaveLength(heads.length);
+      expect(row.querySelectorAll(':scope > [role="gridcell"]')).toHaveLength(heads.length);
   });
 
   test("Advisories has four heads and four cells a row, the advisory's title and ids in one", () => {
     history.replaceState(null, "", "/report.html#view=advisories");
     render(<App model={model("composite")} />);
 
-    const table = screen.getByRole("grid", { name: "Advisories" });
+    const table = screen.getByRole("treegrid", { name: "Advisories" });
     expect(
       within(table)
         .getAllByRole("columnheader")
         .map((head) => head.textContent),
     ).toEqual(["Severity", "Advisory", "Affects", "Fixed by"]);
     for (const row of table.querySelectorAll('[role="row"][data-pkg]')) {
-      expect(row.querySelectorAll(':scope > [role="cell"]')).toHaveLength(4);
-      expect(row.querySelector('.ac-adv[role="cell"] .ac-title')).not.toBeNull();
+      expect(row.querySelectorAll(':scope > [role="gridcell"]')).toHaveLength(4);
+      expect(row.querySelector('.ac-adv[role="gridcell"] .ac-title')).not.toBeNull();
     }
   });
 });

@@ -549,6 +549,9 @@
   "capped-solve-pin-dagger": [
     null
   ],
+  "capped-tag-self-version-dagger": [
+    null
+  ],
   "capped-tag-unverified-dagger": [
     null
   ],
@@ -1114,6 +1117,9 @@
   "mc-split-not-checked-dagger": [
     null
   ],
+  "mc-unreached-non-dev-dagger": [
+    null
+  ],
   "mc-unreached-vcs-dagger": [
     null
   ],
@@ -1304,6 +1310,9 @@
       ],
       "fold": null
     }
+  ],
+  "push-undated-dagger": [
+    null
   ],
   "replace-graded": [
     null

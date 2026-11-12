@@ -187,7 +187,9 @@ describe("radiusCountPhrase", () => {
     const parent = finding("acme/parent");
     const model = source([parent], [entry("acme/parent", [])]);
 
-    expect(radiusCountPhrase(radiusLayout(model, [parent]))).toBe("1 of 1 direct requirement");
+    expect(radiusCountPhrase(radiusLayout(model, [parent]))).toBe(
+      "1 of 1 direct requirement that pulls in flagged packages",
+    );
   });
 
   const listed = [pulled("x/1"), pulled("y/1")];
@@ -198,7 +200,7 @@ describe("radiusCountPhrase", () => {
   it("counts the direct requirements on the exposure list alone (R12)", () => {
     const layout = radiusLayout(model, everything, everything);
 
-    expect(radiusCountPhrase(layout)).toBe("2 of 2 direct requirements");
+    expect(radiusCountPhrase(layout)).toBe("2 of 2 direct requirements that pull in flagged packages");
   });
 });
 
