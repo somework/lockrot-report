@@ -121,6 +121,27 @@ test.describe("the Blast radius tree", () => {
   });
 });
 
+test("a listed package with packages drawn under it is an unfolded item whose keys step to them", async ({
+  page,
+}) => {
+  await page.goto(`${report2Url("baselined-wallabag-2.6")}#view=radius`);
+  const surface = page.locator('[data-surface="radius"]');
+  for (const toggle of await surface.locator(".r2-tog").filter({ visible: true }).all()) {
+    if ((await toggle.getAttribute("aria-expanded")) === "false") await toggle.click();
+  }
+  const deeper = surface.locator('[role="treeitem"][aria-level="3"]').first();
+  const parent = deeper.locator("xpath=preceding-sibling::li[1]");
+  await expect(parent).toHaveAttribute("aria-level", "2");
+  await expect(parent).toHaveAttribute("aria-expanded", "true");
+  await parent.focus();
+
+  await page.keyboard.press("ArrowRight");
+  await expect(deeper).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+
+  await expect(parent).toBeFocused();
+});
+
 for (const view of ["findings", "packages", "advisories", "radius"]) {
   test(`axe finds no violation on #view=${view}`, async ({ page }) => {
     await page.goto(`${report2Url(CASE)}#view=${view}`);

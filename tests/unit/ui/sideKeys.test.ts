@@ -12,7 +12,7 @@ const grid = (): HTMLElement =>
 const tree = (expanded: boolean): HTMLElement =>
   parse(`<ul role="tree"><li role="treeitem" data-pkg="r/r" aria-expanded="${String(expanded)}" tabindex="0">
       <div><button type="button" aria-expanded="${String(expanded)}">t</button></div>
-      <ul role="group"><li role="treeitem" data-pkg="k/k" aria-level="2" tabindex="-1">kid</li><li role="treeitem" data-pkg="g/g" aria-level="3" tabindex="-1">grandkid</li></ul>
+      <ul role="group"><li role="treeitem" data-pkg="k/k" aria-level="2" aria-expanded="true" tabindex="-1">kid</li><li role="treeitem" data-pkg="g/g" aria-level="3" tabindex="-1">grandkid</li></ul>
     </li><li role="treeitem" data-pkg="s/s" tabindex="-1">single</li></ul>`);
 
 const at = (root: HTMLElement, selector: string): HTMLElement =>
@@ -68,6 +68,14 @@ describe("sideStep in a tree", () => {
     expect(sideStep("ArrowLeft", at(open, '[data-pkg="r/r"]'))).toEqual({ toggle: at(open, "button") });
     expect(sideStep("ArrowLeft", at(open, '[data-pkg="k/k"]'))).toEqual({
       focus: at(open, '[data-pkg="r/r"]'),
+    });
+  });
+
+  test("ArrowRight from a listed item with items drawn under it goes to the first of them", () => {
+    const open = tree(true);
+
+    expect(sideStep("ArrowRight", at(open, '[data-pkg="k/k"]'))).toEqual({
+      focus: at(open, '[data-pkg="g/g"]'),
     });
   });
 

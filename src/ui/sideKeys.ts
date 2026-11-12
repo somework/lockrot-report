@@ -34,13 +34,22 @@ function treeStep(item: Element, right: boolean): SideStep {
   if (right && expanded === "false" && toggle !== null) return { toggle };
   if (!right && expanded === "true" && toggle !== null) return { toggle };
   if (right && expanded === "true") {
-    const child = item.querySelector<HTMLElement>(':scope > [role="group"] > [role="treeitem"]');
+    const child =
+      item.querySelector<HTMLElement>(':scope > [role="group"] > [role="treeitem"]') ?? drawnBelow(item);
     return child === null ? STAY : { focus: child };
   }
   if (right) return STAY;
   const parent = drawnUnder(item) ?? item.parentElement?.closest<HTMLElement>('[role="treeitem"]');
 
   return parent === null || parent === undefined ? STAY : { focus: parent };
+}
+
+/** The first item drawn under a listed item: its next sibling, when that sits one level deeper. */
+function drawnBelow(item: Element): HTMLElement | null {
+  const next = item.nextElementSibling;
+  const deeper = Number(next?.getAttribute("aria-level")) > Number(item.getAttribute("aria-level"));
+
+  return deeper && next instanceof HTMLElement ? next : null;
 }
 
 /** The listed item that a deeper item is drawn under: the nearest earlier sibling one level up. */
