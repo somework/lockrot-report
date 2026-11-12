@@ -163,9 +163,15 @@ function unattributedOf<F extends RadiusFinding>(
   });
 }
 
-/** The search bar's count on Blast radius: the direct requirements on `exposure` it shows. */
+/** The search bar's count on Blast radius: the direct requirements on `exposure` it shows, named
+ *  so that a flagged direct requirement with nothing under it does not read as a contradiction. */
 export function radiusCountPhrase<F extends RadiusFinding>(layout: RadiusLayout<F>): string {
-  return countPhrase(layout.rows.length, layout.exposureCount, "direct requirement", "direct requirements");
+  return countPhrase(
+    layout.rows.length,
+    layout.exposureCount,
+    "direct requirement that pulls in flagged packages",
+    "direct requirements that pull in flagged packages",
+  );
 }
 
 // ---------------------------------------------------------------------------------------------

@@ -29,6 +29,21 @@ test("on a tab with no list, the skip link moves focus to the tab's content", as
   await expect(page.getByRole("tabpanel")).toBeFocused();
 });
 
+test("on a Blast radius view with no item, the skip link names the content, as the count line names what it counts", async ({
+  page,
+}) => {
+  // Case A flags one direct requirement, and exposure[] lists none (R19-15, R19-23).
+  await page.goto(report2Url("A") + "#view=radius");
+  await expect(page.locator(".count-line")).toHaveText(
+    "0 of 0 direct requirements that pull in flagged packages",
+  );
+  await page.keyboard.press("Tab");
+
+  await page.getByRole("link", { name: "Skip to the content" }).press("Enter");
+
+  await expect(page.getByRole("tabpanel")).toBeFocused();
+});
+
 // The split layout starts at 1000 px, so 999 px is the widest sheet.
 for (const width of [999, 768]) {
   test(`at ${String(width)} px the open sheet is a modal dialog named for its package`, async ({ page }) => {

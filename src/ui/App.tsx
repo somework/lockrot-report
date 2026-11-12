@@ -6,6 +6,7 @@ import { activeFilters } from "../domain/filters";
 import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
 import { pageTitle, projectName } from "../domain/pageTitle";
 import { openedBesideList, skipLinkLabel } from "../domain/pageVocabulary";
+import { shownExposure } from "../domain/radius2";
 import { PHP_WINDOW_SECTION } from "../domain/runState";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
@@ -559,7 +560,7 @@ export function App({ model, title }: { model: Model; title?: string | undefined
           (row ?? panel)?.focus();
         }}
       >
-        {skipLinkLabel(filterable)}
+        {skipLinkLabel(state.view === "radius" ? shownExposure(model.report).length > 0 : filterable)}
       </a>
       <NewerSchemaBanner inert={sheet} />
       <Header
