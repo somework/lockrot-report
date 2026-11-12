@@ -28,3 +28,8 @@ export async function radiusKids(page: Page, pkg: string): Promise<string[]> {
 export function radiusToggles(page: Page): Locator {
   return radiusSurface(page).getByRole("button", { name: /^The \d+ packages? listed under / });
 }
+
+/** The Blast radius tree items at an ARIA level: 1 for a requirement, 2 for a package listed under it. */
+export function radiusItemsAt(page: Page, level: number): Locator {
+  return radiusSurface(page).getByRole("treeitem", { level });
+}

@@ -7,7 +7,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
-import { radiusSurface, radiusToggles } from "./support/report2/radius";
+import { radiusItemsAt, radiusToggles } from "./support/report2/radius";
 
 const CASE = "composite";
 
@@ -126,12 +126,13 @@ test("a listed package with packages drawn under it is an unfolded item whose ke
   page,
 }) => {
   await page.goto(`${report2Url("baselined-wallabag-2.6")}#view=radius`);
-  const surface = radiusSurface(page);
   for (const toggle of await radiusToggles(page).filter({ visible: true }).all()) {
     if ((await toggle.getAttribute("aria-expanded")) === "false") await toggle.click();
   }
-  const deeper = surface.locator('[role="treeitem"][aria-level="3"]').first();
+  const deeper = radiusItemsAt(page, 3).first();
+  // The item a deeper item is drawn under is the nearest earlier item one level up, so this pins DOM order.
   const parent = deeper.locator("xpath=preceding-sibling::li[1]");
+  await expect(deeper).toHaveAccessibleName(/\//);
   await expect(parent).toHaveAttribute("aria-level", "2");
   await expect(parent).toHaveAttribute("aria-expanded", "true");
   await parent.focus();

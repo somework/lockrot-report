@@ -115,7 +115,7 @@ export class NewReportPage implements ReportPage {
   /** `role=searchbox` (native `<input type="search">` already gets this role; an accessible name
    *  via `aria-label`/`<label>` is still required so `getByRole` alone can find it). */
   private searchLocator(): Locator {
-    return this.page.getByRole("searchbox");
+    return this.page.getByRole("searchbox", { name: "Filter packages" });
   }
 
   async search(text: string): Promise<void> {
