@@ -353,6 +353,12 @@
     }
   ],
   "capped-solve-pin-dagger": [],
+  "capped-tag-self-version-dagger": [
+    {
+      "flag": "capped",
+      "text": "It stops at 8.1, so the newest PHP, 8.5, is excluded."
+    }
+  ],
   "capped-tag-unverified-dagger": [
     {
       "flag": "capped",
@@ -602,6 +608,7 @@
       "text": "It requires php >=8.1 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded."
     }
   ],
+  "mc-unreached-non-dev-dagger": [],
   "mc-unreached-vcs-dagger": [],
   "mc-update-now-maintenance-dagger": [
     {
@@ -690,6 +697,12 @@
     {
       "flag": "vulnerable",
       "text": "4 advisories affect your version. The worst is a medium one (CVE-2026-55766 PKSA-7qs6-zvnz-h66r: CRLF injection in HTTP start-line serialization). None is fixed on 1.x."
+    }
+  ],
+  "push-undated-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
     }
   ],
   "replace-graded": [],

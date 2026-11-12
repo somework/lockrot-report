@@ -1608,6 +1608,26 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "capped-tag-self-version-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
   "capped-tag-unverified-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2953,6 +2973,23 @@
       "Tripped by capped and CVE-2026-48784"
     ]
   },
+  "mc-unreached-non-dev-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
+    ]
+  },
   "mc-unreached-vcs-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -3755,6 +3792,26 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by left-behind and CVE-2026-55766"
+    ]
+  },
+  "push-undated-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through lorisleiva/laravel-search-string",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its push date (no date)"
+    ],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
     ]
   },
   "replace-graded": {

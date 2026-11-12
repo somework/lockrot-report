@@ -3929,6 +3929,41 @@
       "folded_in": null
     }
   ],
+  "capped-tag-self-version-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "self.version",
+      "php_words": null,
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
   "capped-tag-unverified-dagger": [
     {
       "branch": "4.x",
@@ -6147,6 +6182,7 @@
   "mc-split-dagger": [],
   "mc-split-maintenance-larger-dagger": [],
   "mc-split-not-checked-dagger": [],
+  "mc-unreached-non-dev-dagger": [],
   "mc-unreached-vcs-dagger": [],
   "mc-update-now-maintenance-dagger": [
     {
@@ -7616,6 +7652,42 @@
       "php": ">=5.4.0",
       "php_words": null,
       "bar": "1.9.1, released 3.5 years ago",
+      "folded_in": null
+    }
+  ],
+  "push-undated-dagger": [
+    {
+      "branch": "2.x",
+      "marks": [
+        "newest"
+      ],
+      "latest": "2.17.08.29",
+      "age": "9.1y",
+      "php": ">=7.1",
+      "php_words": null,
+      "bar": "2.17.08.29, released 9.1 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "1.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "1.17.05.02",
+      "age": "9.4y",
+      "php": ">=5.5.0",
+      "php_words": null,
+      "bar": "1.17.05.02, released 9.4 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "0.16.x",
+      "marks": [],
+      "latest": "0.16.01.06",
+      "age": "10.7y",
+      "php": null,
+      "php_words": null,
+      "bar": "0.16.01.06, released 10.7 years ago",
       "folded_in": null
     }
   ],

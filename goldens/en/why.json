@@ -619,6 +619,14 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it medium"
   ],
+  "capped-tag-self-version-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "capped 2: ¼ of 8, beside pinned (correlated evidence)",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "without pinned: 8, medium (capped would lead) · without capped: 16, high"
+  ],
   "capped-tag-unverified-dagger": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
     "pinned 16 leads: the strongest maintenance fact counts in full",
@@ -1092,6 +1100,11 @@
     "the advisory alone makes it high",
     "without capped: 16, high · without the advisory: 8, medium"
   ],
+  "mc-unreached-non-dev-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "mc-unreached-vcs-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
@@ -1368,6 +1381,15 @@
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance (left-behind, halved for reach) alone grades it medium, the advisories alone grade it medium: together high",
     "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-55766: 16, high (tied: the others weigh the same)"
+  ],
+  "push-undated-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "abandoned 32 leads: the strongest maintenance fact counts in full",
+    "old-promise 4: ¼ of 16, beside abandoned (correlated evidence)",
+    "transitive: maintenance 36 ÷ 2 = 18",
+    "maintenance alone makes it high",
+    "without abandoned: at least 9, medium (stale would show) · without old-promise: 16, high",
+    "checks not run: its push date (no date)"
   ],
   "replace-graded": [
     "32 · critical from 32 · ages as of 2026-10-01",
