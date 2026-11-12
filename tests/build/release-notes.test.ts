@@ -52,6 +52,13 @@ describe("scripts/release-notes.mjs", () => {
     expect(notes("v0.13.0", CHANGELOG)).toBe("plain notes.\n\n### Added\n\n- a thing.");
   });
 
+  it("returns the section of a heading dated on release day", () => {
+    const dated = "## [0.14.0] - 2026-11-20\n\nfinal notes.\n\n## [0.13.0] - 2026-10-01\n\nplain notes.\n";
+
+    expect(notes("v0.14.0", dated)).toBe("final notes.");
+    expect(notes("v0.14.0-rc.20", dated)).toBe("final notes.");
+  });
+
   it("returns the rc's own section when one names it", () => {
     expect(notes("v0.14.0-rc.1", CHANGELOG)).toBe("rc one notes.");
   });
