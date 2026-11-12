@@ -98,7 +98,7 @@ test.describe("report-2: the sweep over every tab", () => {
   test("the All packages table has a name, and a sort button's name carries no arrow", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(report2Url(CASE) + "#view=packages");
-    const table = page.getByRole("grid", { name: "All packages" });
+    const table = page.getByRole("treegrid", { name: "All packages" });
     await expect(table).toBeVisible();
     const sorted = table.locator('[aria-sort="ascending"]');
     await expect(sorted).toHaveCount(1);

@@ -37,7 +37,7 @@ function focusableRows(view: string): HTMLElement[] {
 }
 
 describe.each([["findings"], ["advisories"], ["packages"]])("a focusable row on %s", (view) => {
-  test("is a row of a grid", () => {
+  test("is a row of a treegrid", () => {
     const rows = focusableRows(view);
 
     expect(rows.length).toBeGreaterThan(0);
@@ -49,7 +49,7 @@ describe.each([["findings"], ["advisories"], ["packages"]])("a focusable row on 
     expect(rows.filter((row) => row.getAttribute("role") !== "row").map((row) => row.dataset.pkg)).toEqual(
       [],
     );
-    expect(rows.filter((row) => row.closest('[role="grid"]') === null).map((row) => row.dataset.pkg)).toEqual(
+    expect(rows.filter((row) => row.closest('[role="treegrid"]') === null).map((row) => row.dataset.pkg)).toEqual(
       [],
     );
   });

@@ -153,7 +153,7 @@ export class NewReportPage implements ReportPage {
 
   /**
    * Rows/cards are expected to carry `role=row` (the Packages table), `role=option` (a selectable
-   * Findings/Radius entry) or `role=listitem`, each with an accessible name that IS the package
+   * Findings entry), `role=treeitem` (a Blast radius entry) or `role=listitem`, each with an accessible name that IS the package
    * name (version/tags are presentation, not folded into the name) — this is the concrete
    * assistive-tech contract `rows()` is written against, not a guess at what exists today. An
    * Advisories row is one advisory, not one package, so its name adds the severity and the CVE or
@@ -168,7 +168,7 @@ export class NewReportPage implements ReportPage {
     return this.page
       .getByRole("row", { name, exact: true })
       .or(this.page.getByRole("option", { name, exact: true }))
-      .or(this.page.getByRole("listitem", { name, exact: true }))
+      .or(this.page.getByRole("treeitem", { name, exact: true }))
       .or(
         this.page.locator(
           `[data-surface="advisories"] [role="row"][data-pkg="${name.replace(/["\\]/g, "\\$&")}"]`,
@@ -340,9 +340,8 @@ export class NewReportPage implements ReportPage {
     return this.page.evaluate(() => {
       const active = document.activeElement;
       if (!active) return null;
-      // A Blast radius row is an `<li>` with no explicit role.
       const role = active.getAttribute("role") ?? { LI: "listitem", TR: "row" }[active.tagName];
-      if (role === "row" || role === "option" || role === "listitem") {
+      if (role === "row" || role === "option" || role === "listitem" || role === "treeitem") {
         // The same name `rows()` reads: an Advisories row's accessible name adds its severity and
         // id ("spomky-labs/otphp, high, PKSA-…"), its `data-pkg` is the package alone.
         return (
@@ -619,13 +618,13 @@ export class NewReportPage implements ReportPage {
       const names: string[] = [];
       const implicit: Record<string, string> = { TR: "row", LI: "listitem" };
       for (const el of document.querySelectorAll<HTMLElement>(
-        '[role="row"], [role="option"], [role="listitem"], tr, li',
+        '[role="row"], [role="option"], [role="listitem"], [role="treeitem"], tr, li',
       )) {
         if (el.getClientRects().length === 0) continue;
         if (el.closest('[hidden], [aria-hidden="true"], [inert]') !== null) continue;
         if (getComputedStyle(el).visibility === "hidden") continue;
         const role = el.getAttribute("role") ?? implicit[el.tagName] ?? "";
-        if (!["row", "option", "listitem"].includes(role)) continue;
+        if (!["row", "option", "listitem", "treeitem"].includes(role)) continue;
         if (el.querySelector('[role="columnheader"], th')) continue;
         if (el.closest('[data-surface="detail"]') !== null) continue;
         if (role === "row" && !el.hasAttribute("data-pkg")) continue;

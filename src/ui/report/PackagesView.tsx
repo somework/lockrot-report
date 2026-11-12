@@ -92,20 +92,20 @@ function PackageRow({
       tabIndex={rowTabIndex(finding.package, cursor)}
       {...openInteractions(finding.package, dispatch)}
     >
-      <td role="cell" className="p2-name">
+      <td role="gridcell" className="p2-name">
         <PackageName name={finding.package} />
       </td>
-      <td role="cell" className="num p2-ver" data-label={label("version")}>
+      <td role="gridcell" className="num p2-ver" data-label={label("version")}>
         <Version version={finding.version} className="p2-v" />
       </td>
-      <td role="cell" className="num p2-ly" data-label={label("libyears")}>
+      <td role="gridcell" className="num p2-ly" data-label={label("libyears")}>
         <Measured cell={libyearsCell(finding)} />
       </td>
-      <td role="cell" className="p2-age" data-label={label("age")}>
+      <td role="gridcell" className="p2-age" data-label={label("age")}>
         <Measured cell={installedAge(finding)} />
       </td>
       <td
-        role="cell"
+        role="gridcell"
         className="p2-verdict"
         id={`${id}-verdict`}
         data-label={label("verdict")}
@@ -113,24 +113,24 @@ function PackageRow({
       >
         {finding.verdict}
       </td>
-      <td role="cell" className="num p2-score" id={`${id}-score`} data-label={label("score")}>
+      <td role="gridcell" className="num p2-score" id={`${id}-score`} data-label={label("score")}>
         {finding.score.total}
       </td>
-      <td role="cell" className="p2-flags" data-label={label("flags")}>
+      <td role="gridcell" className="p2-flags" data-label={label("flags")}>
         {shownPills(finding, run, hideAccepted).length === 0 ? (
           "—"
         ) : (
           <FlagPills finding={finding} run={run} hideAccepted={hideAccepted} />
         )}
       </td>
-      <td role="cell" className="p2-reach" data-label={label("reached")}>
+      <td role="gridcell" className="p2-reach" data-label={label("reached")}>
         {reachedWord(finding)}
       </td>
-      <td role="cell" className="num p2-sig" data-label={label("signals")}>
+      <td role="gridcell" className="num p2-sig" data-label={label("signals")}>
         <Signals finding={finding} />
       </td>
       {showData && (
-        <td role="cell" className="num p2-data" data-label={label("data")}>
+        <td role="gridcell" className="num p2-data" data-label={label("data")}>
           {dataAsOf(finding)}
         </td>
       )}
@@ -204,7 +204,7 @@ export function PackagesView2() {
       >
         <table
           className={showData ? "p2-table has-data" : "p2-table"}
-          role="grid"
+          role="treegrid"
           aria-readonly="true"
           aria-label="All packages"
         >

@@ -62,10 +62,11 @@ function AgeCell2({
   hideAccepted: boolean;
 }) {
   const reading = axis === null ? null : ageReading(finding, run);
-  if (axis === null || reading === null) return <span className="fcell fc-age f2-age is-empty" role="cell" />;
+  if (axis === null || reading === null)
+    return <span className="fcell fc-age f2-age is-empty" role="gridcell" />;
   const label = ageScaleLabel(reading);
   return (
-    <span className="fcell fc-age f2-age" role="cell" aria-label={label} title={label}>
+    <span className="fcell fc-age f2-age" role="gridcell" aria-label={label} title={label}>
       <span className="f2-lbl f2-age-lbl" aria-hidden="true">
         {FINDINGS_HEAD.age}
       </span>
@@ -92,7 +93,7 @@ function AgeCell2({
 function Reach({ finding }: { finding: Finding }) {
   const line = reachLine(finding);
   return (
-    <span className="fcell f2-reach" role="cell">
+    <span className="fcell f2-reach" role="gridcell">
       <Label text={FINDINGS_HEAD.reach} />
       <span className="f2-reach-lead">{line.lead}</span>
       {line.through !== null && (
@@ -133,7 +134,7 @@ function NextStep({ finding, run }: { finding: Finding; run: Run }) {
   const argv = rowCommandArgv(finding);
   const command = argv === null ? null : commandWords(argv, "posix");
   return (
-    <span className="fcell f2-next" role="cell">
+    <span className="fcell f2-next" role="gridcell">
       <Label text={FINDINGS_HEAD.next} />
       {/* A line of its own over the move, so the move keeps its line. */}
       {readyToRun(finding) && <span className="f2-ready">{READY_WORD}</span>}
@@ -181,7 +182,7 @@ function NextStep({ finding, run }: { finding: Finding; run: Run }) {
 function PackageName({ finding }: { finding: Finding }) {
   const slash = finding.package.indexOf("/");
   return (
-    <span className="fcell fc-pkg f2-pkg" role="cell">
+    <span className="fcell fc-pkg f2-pkg" role="gridcell">
       <span className="pkg-word">
         {slash > 0 && (
           <>
@@ -227,7 +228,7 @@ export function FindingRow2({
       tabIndex={rowTabIndex(finding.package, cursor)}
       {...openInteractions(finding.package, dispatch)}
     >
-      <span className="fcell f2-score" role="cell">
+      <span className="fcell f2-score" role="gridcell">
         <Label text={FINDINGS_HEAD.score} />
         <span className="f2-num" aria-hidden="true">
           {finding.score.total}
@@ -241,7 +242,7 @@ export function FindingRow2({
         </span>
       </span>
       <PackageName finding={finding} />
-      <span className="fcell f2-flags" role="cell">
+      <span className="fcell f2-flags" role="gridcell">
         <FlagPills finding={finding} run={run} hideAccepted={hideAccepted} />
         {accepted !== null && <span className="f2-accepted">{accepted}</span>}
       </span>

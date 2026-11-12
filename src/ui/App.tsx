@@ -17,6 +17,7 @@ import { Footer } from "./Footer";
 import { Glossary, type GlossaryAt } from "./Glossary";
 import { Header } from "./Header";
 import { decideKey, findRow, keyInputFrom, prevents, rowAt, rowPosition, type KeyDecision } from "./keyboard";
+import { sideStep, type SideStep } from "./sideKeys";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
 import { anchorShift, measureRow, roomBelow, type RowAnchor } from "./rowAnchor";
@@ -221,6 +222,31 @@ function inFullView(row: HTMLElement): boolean {
   return box.height > 0 && box.top >= header && box.bottom <= window.innerHeight;
 }
 
+/** A cell takes focus only while the arrow keys hold it there, so a click on a row still focuses the row.
+ *  A cell that lays its parts out in the row's grid (`display: contents`) cannot hold focus, so its
+ *  first part takes it. */
+function applySide(step: SideStep): void {
+  if ("toggle" in step) step.toggle.click();
+  if (!("focus" in step)) return;
+  holdFocus(step.focus);
+  const part = step.focus.firstElementChild;
+  if (document.activeElement !== step.focus && part instanceof HTMLElement) holdFocus(part);
+}
+
+function holdFocus(target: HTMLElement): void {
+  if (!target.hasAttribute("tabindex")) {
+    target.tabIndex = -1;
+    target.addEventListener(
+      "blur",
+      () => {
+        target.removeAttribute("tabindex");
+      },
+      { once: true },
+    );
+  }
+  focusRow(target);
+}
+
 /** One document keydown listener that reads the latest page state through a ref. A layout effect,
  *  so a key pressed as soon as the page has loaded already reaches it. */
 function useShortcuts(deps: ShortcutDeps) {
@@ -229,6 +255,15 @@ function useShortcuts(deps: ShortcutDeps) {
 
   useLayoutEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      const modified = event.ctrlKey || event.metaKey || event.altKey || event.shiftKey;
+      const step = modified
+        ? null
+        : sideStep(event.key, event.target instanceof Element ? event.target : null);
+      if (step !== null) {
+        event.preventDefault();
+        applySide(step);
+        return;
+      }
       const current = latest.current;
       const { model, state } = current;
       const decision = decideKey(
