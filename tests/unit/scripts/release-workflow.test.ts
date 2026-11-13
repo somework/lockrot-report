@@ -125,6 +125,12 @@ describe("the e2e gate runs one job per browser on the gates job's build", () =>
   });
 });
 
+test("the gates job reads the tag's CHANGELOG section, so a final tag with an undated heading stops before e2e", () => {
+  const gates = jobs().get("gates") ?? "";
+
+  expect(gates).toMatch(/\n {8}run: node scripts\/release-notes\.mjs "\$GITHUB_REF_NAME" > \/dev\/null\n/);
+});
+
 /** The shell of the gates step named `name`, as the runner gets it. */
 function stepScript(name: string): string {
   const gates = jobs().get("gates") ?? "";

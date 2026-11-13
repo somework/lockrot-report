@@ -21,7 +21,7 @@ rc two notes.
 
 rc one notes.
 
-## [0.13.0]
+## [0.13.0] - 2026-10-01
 
 plain notes.
 
@@ -29,7 +29,7 @@ plain notes.
 
 - a thing.
 
-## [0.12.0]
+## [0.12.0] - 2026-09-01
 
 older notes.
 `;
@@ -40,7 +40,7 @@ const NO_RC_SECTION = `# Changelog
 
 final notes.
 
-## [0.13.0]
+## [0.13.0] - 2026-10-01
 
 plain notes.
 `;
@@ -57,6 +57,15 @@ describe("scripts/release-notes.mjs", () => {
 
     expect(notes("v0.14.0", dated)).toBe("final notes.");
     expect(notes("v0.14.0-rc.20", dated)).toBe("final notes.");
+  });
+
+  it("refuses a final tag whose heading has no date", () => {
+    expect(() => notes("v0.14.0", NO_RC_SECTION)).toThrow("## [0.14.0] has no date");
+    expect(() => notes("v0.14.0", "## [0.14.0] - 2026-11\n\nfinal notes.\n")).toThrow("has no date");
+  });
+
+  it("takes an undated heading for a pre-release", () => {
+    expect(notes("v0.14.0-rc.3", NO_RC_SECTION)).toBe("final notes.");
   });
 
   it("returns the rc's own section when one names it", () => {
@@ -88,7 +97,7 @@ describe("scripts/release-notes.mjs", () => {
   });
 
   it("keeps a version link reference inside a section and the bullets after it", () => {
-    const linked = `## [0.13.0]\n\n- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0\n\n- later.\n\n## [0.12.0]\n\nolder.\n`;
+    const linked = `## [0.13.0] - 2026-10-01\n\n- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0\n\n- later.\n\n## [0.12.0] - 2026-09-01\n\nolder.\n`;
 
     expect(notes("v0.13.0", linked)).toBe(
       "- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0\n\n- later.",
@@ -96,13 +105,13 @@ describe("scripts/release-notes.mjs", () => {
   });
 
   it("keeps a trailing version link reference that the section itself uses", () => {
-    const linked = `## [0.13.0]\n\n- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0\n[0.11.0]: https://example.test/0.11.0\n`;
+    const linked = `## [0.13.0] - 2026-10-01\n\n- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0\n[0.11.0]: https://example.test/0.11.0\n`;
 
     expect(notes("v0.13.0", linked)).toBe("- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0");
   });
 
   it("keeps a link reference inside a section that names no version", () => {
-    const linked = `## [0.13.0]\n\nsee [SPEC].\n\n[SPEC]: https://example.test/spec\n\n## [0.12.0]\n\nolder.\n`;
+    const linked = `## [0.13.0] - 2026-10-01\n\nsee [SPEC].\n\n[SPEC]: https://example.test/spec\n\n## [0.12.0] - 2026-09-01\n\nolder.\n`;
 
     expect(notes("v0.13.0", linked)).toBe("see [SPEC].\n\n[SPEC]: https://example.test/spec");
   });
@@ -119,6 +128,6 @@ describe("scripts/release-notes.mjs", () => {
     const script = join(dirname(dirname(dirname(fileURLToPath(import.meta.url)))), "scripts/release-notes.mjs");
     const link = join(mkdtempSync(join(tmpdir(), "release-notes-")), "link.mjs");
     symlinkSync(script, link);
-    expect(execFileSync(process.execPath, [link, "v0.13.0"], { encoding: "utf8" })).toContain("lockrot 0.13.0");
+    expect(execFileSync(process.execPath, [link, "v0.14.0-rc.1"], { encoding: "utf8" })).toContain("lockrot");
   });
 });

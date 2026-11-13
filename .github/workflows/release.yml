@@ -4,8 +4,8 @@ name: Release
 # vendors report.html and manifest.json from that release after `gh attestation verify`. A tag with
 # a pre-release suffix (vX.Y.Z-rc.N) publishes a pre-release that is never the Latest release.
 # A final tag outside main, a pre-release outside main and the release branches, a lockrot pin
-# outside lockrot's main and tags or with no green lockrot run, or a red gate of ci.yml stops the
-# release before anything is attested.
+# outside lockrot's main and tags or with no green lockrot run, a final tag whose CHANGELOG heading
+# has no date, or a red gate of ci.yml stops the release before anything is attested.
 # The gates, e2e and build jobs run the repository's code with a read-only token. The build job runs
 # no install script. Each e2e job tests the gates job's own build, and the publish job checks its
 # files against that build's digests. Only the publish job, which runs none of that code, holds the
@@ -44,6 +44,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      # The build job writes the notes too. This step stops the run before the browser suite.
+      - name: the CHANGELOG has the tag's section, dated for a final tag
+        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > /dev/null
       # A pin that only a lockrot branch holds can vanish, and the attested page could then no
       # longer be rebuilt from its pin.
       - name: the lockrot pin is on lockrot's main or a lockrot tag
