@@ -59,6 +59,72 @@ test("the published files come from a build that ran no install script, and matc
   expect(publish.indexOf("sha256sum --check")).toBeLessThan(publish.indexOf("attest-build-provenance"));
 });
 
+const needs = (job: string): string[] =>
+  (/^ {4}needs: \[?([^\]\n]*)\]?$/m.exec(job)?.[1] ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+
+const browsers = (workflow: string): string[] =>
+  (/^ {8}browser: \[([^\]]*)\]$/m.exec(workflow)?.[1] ?? "").split(",").map((name) => name.trim());
+
+/** Whether one step of `job` uses `action` on the artifact named `name`, whatever the key order. */
+const movesArtifact = (job: string, action: "upload-artifact" | "download-artifact", name: string): boolean =>
+  job
+    .split(/\n {6}- /)
+    .some(
+      (step) => step.includes(`actions/${action}@`) && new RegExp(`^ {10}name: ${name}$`, "m").test(step),
+    );
+
+describe("the e2e gate runs one job per browser on the gates job's build", () => {
+  const e2e = (): [string, string][] => [...jobs()].filter(([, job]) => job.includes("npx playwright test"));
+
+  test("one job runs the suite, once per browser of ci.yml's matrix, each on its own browser", () => {
+    const ci = readFileSync(join(process.cwd(), ".github", "workflows", "ci.yml"), "utf8");
+
+    expect(
+      e2e().map(([id, job]) => ({
+        id,
+        browsers: browsers(job),
+        project: /npx playwright test --project=\$\{\{ matrix\.browser \}\}\n/.test(job),
+      })),
+    ).toEqual([{ id: "e2e", browsers: browsers(ci), project: true }]);
+  });
+
+  test("the e2e job tests the dist the gates job digested, and builds none of its own", () => {
+    const digester = [...jobs()].filter(([, job]) => job.includes("sha256sum report.html"));
+
+    expect(
+      digester.map(([id, job]) => ({ id, uploadsDist: movesArtifact(job, "upload-artifact", "dist") })),
+    ).toEqual([{ id: "gates", uploadsDist: true }]);
+    expect(
+      e2e().map(([id, job]) => ({
+        id,
+        needs: needs(job),
+        downloadsDist: movesArtifact(job, "download-artifact", "dist"),
+        builds: /npm run build|vite build/.test(job),
+      })),
+    ).toEqual([{ id: "e2e", needs: ["gates"], downloadsDist: true, builds: false }]);
+  });
+
+  test("publish needs every other job, so no red gate or e2e job publishes", () => {
+    const all = jobs();
+    const others = [...all.keys()].filter((id) => id !== "publish");
+
+    expect(others).toEqual(expect.arrayContaining(["gates", "e2e", "build"]));
+    expect(needs(all.get("publish") ?? "").sort()).toEqual(others.sort());
+  });
+
+  test("no condition lets publish run past a red job, and no job or step lets its failure pass", () => {
+    const publish = jobs().get("publish") ?? "";
+
+    expect({ publishIf: /^ {4}if:/m.exec(publish)?.[0] ?? null }).toEqual({ publishIf: null });
+    expect({ continueOnError: /continue-on-error/.exec(WORKFLOW)?.[0] ?? null }).toEqual({
+      continueOnError: null,
+    });
+  });
+});
+
 /** The shell of the gates step named `name`, as the runner gets it. */
 function stepScript(name: string): string {
   const gates = jobs().get("gates") ?? "";

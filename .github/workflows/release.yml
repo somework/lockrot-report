@@ -6,9 +6,10 @@ name: Release
 # A final tag outside main, a pre-release outside main and the release branches, a lockrot pin
 # outside lockrot's main and tags or with no green lockrot run, or a red gate of ci.yml stops the
 # release before anything is attested.
-# The gates and build jobs run the repository's code with a read-only token. The build job runs no
-# install script, and the publish job checks its files against the gates job's own build. Only the
-# publish job, which runs none of that code, holds the tokens that attest and publish.
+# The gates, e2e and build jobs run the repository's code with a read-only token. The build job runs
+# no install script. Each e2e job tests the gates job's own build, and the publish job checks its
+# files against that build's digests. Only the publish job, which runs none of that code, holds the
+# tokens that attest and publish.
 
 on:
   push:
@@ -75,7 +76,7 @@ jobs:
           same package.json "$(node -p 'require("./package.json").version')"
           same 'package-lock.json version' "$(node -p 'require("./package-lock.json").version')"
           same 'package-lock.json packages[""].version' "$(node -p 'require("./package-lock.json").packages[""].version')"
-      # The same gates as ci.yml, in its order, all three browsers in one job.
+      # The same gates as ci.yml, in its order. The e2e jobs run the browser suite on this build.
       - run: npm run contract:fetch
       - run: npm run format:check
       - run: npm run lint
@@ -89,13 +90,6 @@ jobs:
           cp -r dist "$RUNNER_TEMP/first"
           npm run build
           diff -r "$RUNNER_TEMP/first" dist
-      - run: npx playwright install --with-deps chromium firefox webkit
-      # Pinned so the layout budgets measure the same fonts as ci.yml.
-      - run: sudo apt-get install -y --no-install-recommends fonts-dejavu-core
-      - run: node scripts/pages.mjs
-      - run: npx playwright test
-        env:
-          CI: "true"
       - name: the digests of the tested build
         run: |
           mkdir digests
@@ -105,6 +99,46 @@ jobs:
           name: digests
           path: digests/
           if-no-files-found: error
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  e2e:
+    name: e2e (${{ matrix.browser }})
+    needs: gates
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+      - run: npm run contract:fetch
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      # Pinned so the layout budgets measure the same fonts as ci.yml.
+      - run: sudo apt-get install -y --no-install-recommends fonts-dejavu-core
+      - run: node scripts/pages.mjs
+      - run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          CI: "true"
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-${{ matrix.browser }}
+          path: test-results/
 
   build:
     runs-on: ubuntu-latest
@@ -130,7 +164,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: [gates, build]
+    needs: [gates, e2e, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release
@@ -146,7 +180,7 @@ jobs:
           name: digests
           path: digests/
       # The build is reproducible, so a file that differs from the tested build was changed.
-      - name: the files are the bytes the gates job tested
+      - name: the files are the bytes the gates and e2e jobs tested
         run: cd release && sha256sum --check ../digests/sha256.txt
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
