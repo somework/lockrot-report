@@ -1863,6 +1863,20 @@
       "value": "2026-09-16 · less than three weeks ago"
     }
   ],
+  "mc-baseline-provide-unmatched-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-05 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
   "mc-baseline-refused-dagger": [
     {
       "label": "installed",
@@ -1875,6 +1889,48 @@
     {
       "label": "last push",
       "value": "2026-07-03 · 0.2 years ago"
+    }
+  ],
+  "mc-baseline-synced-non-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-baseline-unsynced-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-baseline-unsynced-hashless-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
     }
   ],
   "mc-blocking-off-both-dagger": [

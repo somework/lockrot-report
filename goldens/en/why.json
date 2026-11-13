@@ -903,9 +903,29 @@
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance alone makes it medium"
   ],
+  "mc-baseline-provide-unmatched-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "mc-baseline-refused-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-baseline-synced-non-dev-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-baseline-unsynced-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-baseline-unsynced-hashless-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
   "mc-blocking-off-both-dagger": [

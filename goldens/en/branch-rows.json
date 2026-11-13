@@ -5865,7 +5865,11 @@
       "folded_in": null
     }
   ],
+  "mc-baseline-provide-unmatched-dagger": [],
   "mc-baseline-refused-dagger": [],
+  "mc-baseline-synced-non-dev-dagger": [],
+  "mc-baseline-unsynced-dagger": [],
+  "mc-baseline-unsynced-hashless-dagger": [],
   "mc-blocking-off-both-dagger": [],
   "mc-blocking-off-dagger": [],
   "mc-canonical-package-dagger": [],

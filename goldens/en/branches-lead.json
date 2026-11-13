@@ -443,8 +443,24 @@
     "Your branch, 1.x, had its last release, v1.10.0, 4.2 years ago.",
     "The move's branch, 2.x, released v2.5.4 2.0 years ago."
   ],
+  "mc-baseline-provide-unmatched-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
   "mc-baseline-refused-dagger": [
     "Your branch, 2.x, had its last release, v2.3.2, 0.2 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-baseline-synced-non-dev-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-baseline-unsynced-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-baseline-unsynced-hashless-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
     "It has no higher branch."
   ],
   "mc-blocking-off-both-dagger": [
