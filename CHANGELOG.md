@@ -44,8 +44,8 @@ tag or the address format, says so under **Breaking** in its entry.
   packages listed under {name}".
 - The Why line of a partial update lists what it clears as the Meanwhile line does: "it clears
   old-promise, stale and 1 of its 2 advisories".
-- When the filters hide every Blast radius row, the lead keeps "{n} flagged packages pulled in." and
-  the fan-in line, and adds no other sentence.
+- The Blast radius lead reads the same under any filter. A filter no longer drops "{n} flagged
+  packages pulled in.", the fan-in line or the line that names the requirements that hold them.
 - A 0.13 link with `fix=branch`, `fix=move` or `prio=none` opens the list it meant: `fix=update`,
   `fix=upgrade` or the packages with no grade. A `fix` value that names no fix kind is dropped.
 

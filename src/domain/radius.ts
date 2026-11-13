@@ -70,7 +70,6 @@ export interface RadiusLayout<F extends RadiusFinding = RadiusFinding> {
   readonly unfilteredUnlisted: number;
   /** Not every direct requirement the project has, so the view never says "your N". */
   readonly exposureCount: number;
-  readonly narrowed: boolean;
   /** With no filter: the distinct flagged packages listed under any row, and the rows listing any. */
   readonly unfilteredTotal: number;
   readonly unfilteredRows: number;
@@ -125,7 +124,6 @@ export function radiusLayout<F extends RadiusFinding>(
   allFlagged: readonly F[] = visibleFlagged,
 ): RadiusLayout<F> {
   const every = radiusRows(model, visibleFlagged, allFlagged);
-  const visible = new Set(visibleFlagged.map((f) => f.package));
   const all = new Set(allFlagged.map((f) => f.package));
   // A requirement whose S7 names no finding of the report keeps its row: `exposure[]` still counts it.
   const rows = every.filter((r) => r.count > 0 || r.self !== null || r.unfiltered === 0);
@@ -143,7 +141,6 @@ export function radiusLayout<F extends RadiusFinding>(
     unlisted: visibleFlagged.filter((f) => f.direct && !parents.has(f.package)),
     unfilteredUnlisted: allFlagged.filter((f) => f.direct && !parents.has(f.package)).length,
     exposureCount: every.length,
-    narrowed: allFlagged.some((f) => !visible.has(f.package)),
     unfilteredTotal: unfilteredListed.size,
     unfilteredRows: every.filter((r) => r.unfiltered > 0).length,
     unattributed: unattributedOf(model, visibleFlagged),

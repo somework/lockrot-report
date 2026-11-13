@@ -123,7 +123,7 @@ describe("radiusLayout2", () => {
 
 describe("radius words", () => {
   it("R12: counts the packages pulled in, those shared by too many requirements, then the rows that hold them (wallabag)", () => {
-    const lines = radiusAnswer2(wallabag, layoutOf(wallabag));
+    const lines = radiusAnswer2(wallabag, population2(wallabag, "radius"));
 
     expect(lines.slice(0, 2)).toEqual([
       "52 flagged packages pulled in.",
@@ -134,7 +134,7 @@ describe("radius words", () => {
 
   it("R12: says nothing of unattributed packages when there are none, and names the first row on a tie", () => {
     // composite: two transitive packages, one under each of its two exposure requirements.
-    expect(radiusAnswer2(composite, layoutOf(composite))).toEqual([
+    expect(radiusAnswer2(composite, population2(composite, "radius"))).toEqual([
       "2 flagged packages pulled in.",
       "1 of them sits under friendsofsymfony/oauth-server-bundle.",
     ]);
@@ -142,7 +142,7 @@ describe("radius words", () => {
 
   it("counts every package pulled in as shared by too many requirements when no row lists one", () => {
     const report: Report2 = { ...composite, exposure: [{ package: "symfony/yaml", flagged: 2 }] };
-    expect(radiusAnswer2(report, layoutOf(report))).toEqual([
+    expect(radiusAnswer2(report, population2(report, "radius"))).toEqual([
       "2 flagged packages pulled in.",
       "2 of them sit under more than 8 direct requirements.",
     ]);
@@ -155,7 +155,7 @@ describe("radius words", () => {
       exposure_rule: { max_fan_in: 3 },
       rot_depth: { ...composite.rot_depth, by_reach: { ...composite.rot_depth.by_reach, transitive: 1 } },
     };
-    expect(radiusAnswer2(report, layoutOf(report))[1]).toBe(
+    expect(radiusAnswer2(report, population2(report, "radius"))[1]).toBe(
       "1 of them sits under more than 3 direct requirements.",
     );
   });
@@ -193,31 +193,12 @@ describe("radius words", () => {
     expect(RADIUS_WORDS.filtered(2)).toBe("2 more do not match the filter");
   });
 
-  it("keeps the pulled and unlisted lines under a grade filter, and drops the held line (wallabag)", () => {
-    const all = population2(wallabag, "radius");
-    const high = all.filter((f) => f.verdict === "high");
-
-    expect(radiusAnswer2(wallabag, radiusLayout2(wallabag, high, all))).toEqual([
-      "52 flagged packages pulled in.",
-      "7 of them sit under more than 8 direct requirements.",
-    ]);
-  });
-
   it("ends the lead when nothing is pulled in", () => {
     const direct: Report2 = {
       ...composite,
       rot_depth: { ...composite.rot_depth, by_reach: { ...composite.rot_depth.by_reach, transitive: 0 } },
     };
-    expect(radiusAnswer2(direct, layoutOf(direct))).toEqual([]);
-  });
-
-  it("§7.9.20: keeps the pulled and unlisted lines, and adds no line of its own, when the filter hides every row (wallabag)", () => {
-    const narrowed = radiusLayout2(wallabag, [], population2(wallabag, "radius"));
-
-    expect(radiusAnswer2(wallabag, narrowed)).toEqual([
-      "52 flagged packages pulled in.",
-      "7 of them sit under more than 8 direct requirements.",
-    ]);
+    expect(radiusAnswer2(direct, population2(direct, "radius"))).toEqual([]);
   });
 });
 

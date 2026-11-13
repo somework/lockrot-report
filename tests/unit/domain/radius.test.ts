@@ -160,10 +160,9 @@ describe("under a filter (PD-RADIUS-6)", () => {
     entry("zeta/root", [["zeta/x"]]),
   ]);
 
-  it("keeps each row's unfiltered count beside the filtered one, and says it is narrowed", () => {
+  it("keeps each row's unfiltered count beside the filtered one", () => {
     const layout = radiusLayout(model, [parent, a], all);
 
-    expect(layout.narrowed).toBe(true);
     expect(layout.rows.map((r) => [r.package, r.count, r.unfiltered])).toEqual([["acme/parent", 1, 2]]);
     expect([layout.unfilteredTotal, layout.unfilteredRows]).toEqual([3, 2]);
   });
@@ -174,10 +173,9 @@ describe("under a filter (PD-RADIUS-6)", () => {
     expect(layout.rows.map((r) => [r.package, r.count, r.unfiltered])).toEqual([["acme/parent", 0, 2]]);
   });
 
-  it("is not narrowed when the filter keeps every flagged package", () => {
+  it("counts every package when the filter keeps every flagged package", () => {
     const layout = radiusLayout(model, all, all);
 
-    expect(layout.narrowed).toBe(false);
     expect(layout.rows.every((r) => r.count === r.unfiltered)).toBe(true);
   });
 });
