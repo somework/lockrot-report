@@ -214,7 +214,9 @@ one key `hide` hides the accepted pills and filters no package, so it is no acti
 terms: `prio=` as `verdict=`, `prio=none` as the zero verdicts of `score_model.zero_verdicts[]`, a
 flag in `verdict=` as `flag=`, and `fix=branch` and `fix=move` as `fix=update` and `fix=upgrade`,
 so `prio` never holds a key after boot (SPEC §7.9.7). A `fix` value that names no fix kind of the
-report has no report-2 meaning, so the page drops it from the address.
+report has no report-2 meaning, so the page drops it from the address. `fix=move` opens `upgrade` only. A 0.13
+move whose easiest release needs a higher PHP or cannot install reads `raise-php` or `blocked` in
+report-2, and those keep their own rail rows.
 
 Changes from the legacy page, each a fix:
 

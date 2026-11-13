@@ -126,12 +126,23 @@ test.describe("on a report-2 page", () => {
     expect(await report.rows()).toEqual(update);
     expect(update.length).toBeGreaterThan(0);
     expect(await report.hash()).toBe("#view=advisories&fix=update");
+    await report.gotoReport2WithHash("composite", "view=advisories&fix=upgrade");
+    const upgrade = await report.rows();
     await report.gotoReport2WithHash("composite", "view=advisories&fix=move");
+    expect(await report.rows()).toEqual(upgrade);
+    expect(upgrade.length).toBeGreaterThan(0);
     expect(await report.hash()).toBe("#view=advisories&fix=upgrade");
   });
 
   test("an old prio=none fragment opens the zero verdicts", async () => {
-    await report.gotoReport2WithHash("composite", "view=packages&prio=none");
+    await report.gotoReport2WithHash(
+      "baselined-wallabag-2.6",
+      "view=packages&verdict=finished%2Cunknown%2Cok",
+    );
+    const zero = await report.rows();
+    await report.gotoReport2WithHash("baselined-wallabag-2.6", "view=packages&prio=none");
+    expect(await report.rows()).toEqual(zero);
+    expect(zero.length).toBeGreaterThan(0);
     expect(await report.hash()).toBe("#view=packages&verdict=finished%2Cunknown%2Cok");
   });
 

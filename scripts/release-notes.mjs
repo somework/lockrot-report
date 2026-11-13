@@ -25,11 +25,14 @@ function sectionOf(changelog, version) {
   return { head, notes: used.length === 0 ? body : `${body}\n\n${used.join("\n")}` };
 }
 
+const isDay = (text) =>
+  text !== undefined && !Number.isNaN(Date.parse(text)) && new Date(text).toISOString().startsWith(text);
+
 export function releaseNotes(tag, changelog) {
   const version = tag.replace(/^v/, "");
   const section = sectionOf(changelog, version) ?? sectionOf(changelog, version.replace(/-.+$/, ""));
   if (section === null) throw new Error(`CHANGELOG.md has no section for ${version}`);
-  if (!version.includes("-") && !/ - \d{4}-\d{2}-\d{2}\s*$/.test(section.head))
+  if (!version.includes("-") && !isDay(/ - (\d{4}-\d{2}-\d{2})\s*$/.exec(section.head)?.[1]))
     throw new Error(`CHANGELOG.md heading ${section.head.trim()} has no date: ## [${version}] - YYYY-MM-DD`);
   return section.notes;
 }

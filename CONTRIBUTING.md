@@ -107,8 +107,8 @@ the report-1 screen.
    `version` in `package.json` and both `version` fields of `package-lock.json` (the root and
    `packages[""]`) to the same number. `npm version <version> --no-git-tag-version` sets all three.
    For a final tag, commit only the version and the pin: `package.json`, the two `version` fields of
-   `package-lock.json`, the CHANGELOG heading and `contract/lockrot.json`. If `repin` changed
-   another file under `contract/`, V does not vendor the same bundle, so stop. For a final tag, that
+   `package-lock.json`, the CHANGELOG heading and `contract/lockrot.json`. If `repin` still
+   changes another file under `contract/` after that merge, V does not vendor the same bundle, so stop. For a final tag, that
    commit also dates the CHANGELOG heading with the release day, the UTC day of the tag:
    `## [X.Y.Z] - YYYY-MM-DD`, as Keep a Changelog asks. The release workflow refuses a final tag
    whose heading has no date. A pre-release leaves the heading undated. Merge the commit into main

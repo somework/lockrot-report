@@ -277,10 +277,9 @@ const FIX_013: ReadonlyMap<string, string> = new Map([
  * The filters a report-2 address may carry. A 0.13 link opens on report-2 terms (SPEC §7.9.7):
  * `prio=` as `verdict=`, with `prio=none` as the zero verdicts, a flag named in `verdict=` as
  * `flag=`, and `fix=branch` and `fix=move` as `update` and `upgrade`. A `fix` value that names no
- * fix kind of the report is dropped. A `gate` key stays only when
- * some package fails the run, `accepted` keeps only its toggle, and `scope` and `since` only their
- * own keys. A run with no baseline keeps no `since` value. Returns `filters` itself when nothing
- * changes.
+ * fix kind of the report is dropped. A `gate` key stays only when some package fails the run,
+ * `accepted` keeps only its toggle, and `scope` and `since` only their own keys. A run with no
+ * baseline keeps no `since` value. Returns `filters` itself when nothing changes.
  */
 export function fitFilters2(report: Report2, filters: Filters): Filters {
   const flagIds: readonly string[] = report.run.flag_ids;

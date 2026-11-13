@@ -62,6 +62,12 @@ describe("scripts/release-notes.mjs", () => {
   it("refuses a final tag whose heading has no date", () => {
     expect(() => notes("v0.14.0", NO_RC_SECTION)).toThrow("## [0.14.0] has no date");
     expect(() => notes("v0.14.0", "## [0.14.0] - 2026-11\n\nfinal notes.\n")).toThrow("has no date");
+    expect(() => notes("v0.14.0", "## [0.14.0] - 2026-13-45\n\nfinal notes.\n")).toThrow("has no date");
+  });
+
+  it("takes a dated heading with trailing spaces or a CRLF line end", () => {
+    expect(notes("v0.14.0", "## [0.14.0] - 2026-11-20  \n\nfinal notes.\n")).toBe("final notes.");
+    expect(notes("v0.14.0", "## [0.14.0] - 2026-11-20\r\n\r\nfinal notes.\r\n")).toBe("final notes.");
   });
 
   it("takes an undated heading for a pre-release", () => {
