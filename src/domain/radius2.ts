@@ -95,11 +95,8 @@ export function gradeMix(report: Report2, findings: readonly Finding[]): string 
  *  (`rot_depth.by_reach.transitive`), how many no exposure S7 lists, then the rows that hold them. */
 export function radiusAnswer2(report: Report2, layout: RadiusLayout2): string[] {
   const pulled = report.rot_depth.by_reach.transitive;
-  const answer = radiusAnswer(layout, pulled);
-  if (answer === null && layout.narrowed) {
-    return ["No direct requirement lists a flagged package that matches the filter."];
-  }
   if (pulled === 0) return [];
+  const answer = radiusAnswer(layout, pulled);
   const unlisted = pulled - listedTransitive(report);
   const sit = (n: number): string => `${String(n)} of them ${pluralNoun(n, "sits", "sit")} under`;
   const names = answer?.top.map((row) => row.package) ?? [];

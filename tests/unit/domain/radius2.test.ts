@@ -203,15 +203,20 @@ describe("radius words", () => {
     ]);
   });
 
-  it("ends the lead when nothing is pulled in, and answers a filtered tab", () => {
+  it("ends the lead when nothing is pulled in", () => {
     const direct: Report2 = {
       ...composite,
       rot_depth: { ...composite.rot_depth, by_reach: { ...composite.rot_depth.by_reach, transitive: 0 } },
     };
     expect(radiusAnswer2(direct, layoutOf(direct))).toEqual([]);
-    const narrowed = radiusLayout2(composite, [], population2(composite, "radius"));
-    expect(radiusAnswer2(composite, narrowed)).toEqual([
-      "No direct requirement lists a flagged package that matches the filter.",
+  });
+
+  it("§7.9.20: keeps the pulled and unlisted lines, and adds no line of its own, when the filter hides every row (wallabag)", () => {
+    const narrowed = radiusLayout2(wallabag, [], population2(wallabag, "radius"));
+
+    expect(radiusAnswer2(wallabag, narrowed)).toEqual([
+      "52 flagged packages pulled in.",
+      "7 of them sit under more than 8 direct requirements.",
     ]);
   });
 });
