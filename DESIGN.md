@@ -211,8 +211,10 @@ opaque-origin frame) switches writing off for the page's life.
 the fix labels (SPEC §7.9.7). Three groups follow `gate`: `verdict`, the rail's Grade group in `run.graded_verdicts` order (PD-RAIL-7), `flag` (the counted flags, any of) and `accepted`, a view toggle whose
 one key `hide` hides the accepted pills and filters no package, so it is no active-filter chip
 (PD-RAIL-5). `scope=unnamed` is the "not in composer.json" chip. A 0.13 link opens on report-2
-terms: `prio=` as `verdict=`, and a flag in `verdict=` as `flag=`, so `prio` never holds a key
-after boot (SPEC §7.9.7).
+terms: `prio=` as `verdict=`, `prio=none` as the zero verdicts of `score_model.zero_verdicts[]`, a
+flag in `verdict=` as `flag=`, and `fix=branch` and `fix=move` as `fix=update` and `fix=upgrade`,
+so `prio` never holds a key after boot (SPEC §7.9.7). A `fix` value that names no fix kind of the
+report has no report-2 meaning, so the page drops it from the address.
 
 Changes from the legacy page, each a fix:
 

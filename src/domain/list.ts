@@ -267,9 +267,17 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
 
 const union = (a: readonly string[], b: readonly string[]): string[] => [...new Set([...a, ...b])];
 
+/** The 0.13 fix keys: a release on the installed branch, and one that needs a move off it. */
+const FIX_013: ReadonlyMap<string, string> = new Map([
+  ["branch", "update"],
+  ["move", "upgrade"],
+]);
+
 /**
  * The filters a report-2 address may carry. A 0.13 link opens on report-2 terms (SPEC §7.9.7):
- * `prio=` as `verdict=`, and a flag named in `verdict=` as `flag=`. A `gate` key stays only when
+ * `prio=` as `verdict=`, with `prio=none` as the zero verdicts, a flag named in `verdict=` as
+ * `flag=`, and `fix=branch` and `fix=move` as `update` and `upgrade`. A `fix` value that names no
+ * fix kind of the report is dropped. A `gate` key stays only when
  * some package fails the run, `accepted` keeps only its toggle, and `scope` and `since` only their
  * own keys. A run with no baseline keeps no `since` value. Returns `filters` itself when nothing
  * changes.
@@ -277,6 +285,10 @@ const union = (a: readonly string[], b: readonly string[]): string[] => [...new 
 export function fitFilters2(report: Report2, filters: Filters): Filters {
   const flagIds: readonly string[] = report.run.flag_ids;
   const named = filters.verdict.filter((key) => flagIds.includes(key));
+  const fixKinds: readonly string[] = report.run.score_model.fix_kinds.map(({ id }) => id);
+  const fix = [
+    ...new Set(filters.fix.map((key) => FIX_013.get(key) ?? key).filter((key) => fixKinds.includes(key))),
+  ];
   const gate = filters.gate.filter(
     (key) =>
       key === READY_KEY ||
@@ -293,18 +305,22 @@ export function fitFilters2(report: Report2, filters: Filters): Filters {
     gate.length === filters.gate.length &&
     accepted.length === filters.accepted.length &&
     scope.length === filters.scope.length &&
-    since.length === filters.since.length
+    since.length === filters.since.length &&
+    fix.length === filters.fix.length &&
+    fix.every((key, i) => key === filters.fix[i])
   )
     return filters;
+  const zero = report.run.score_model.zero_verdicts.map(({ verdict }) => verdict);
   return {
     ...filters,
     accepted,
     scope,
     since,
+    fix,
     prio: [],
     verdict: union(
       filters.verdict.filter((key) => !flagIds.includes(key)),
-      filters.prio,
+      filters.prio.flatMap((key) => (key === "none" ? zero : [key])),
     ),
     flag: union(filters.flag, named),
     gate,

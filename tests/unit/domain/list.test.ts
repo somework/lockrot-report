@@ -385,6 +385,46 @@ describe("fitFilters2 on scope and since values (R5-28)", () => {
   });
 });
 
+describe("fitFilters2 on 0.13 fix and prio keys (SPEC §7.9.7: no 0.13 link changes its meaning)", () => {
+  const wallabag = multiFindingReports().find(({ name }) => name === "baselined/wallabag-2.6")?.report;
+  if (wallabag === undefined) throw new Error("no baselined report");
+
+  it("opens fix=branch as fix=update and fix=move as fix=upgrade", () => {
+    expect(fitFilters2(composite, { ...EMPTY_FILTERS, fix: ["branch"] }).fix).toEqual(["update"]);
+    expect(fitFilters2(composite, { ...EMPTY_FILTERS, fix: ["move", "none"] }).fix).toEqual([
+      "upgrade",
+      "none",
+    ]);
+  });
+
+  it("lists on fix=branch the advisories that fix=update lists", () => {
+    const listed = (fix: string): string[] =>
+      applyFilters2(
+        composite,
+        state({ view: "advisories" }, fitFilters2(composite, { ...EMPTY_FILTERS, fix: [fix] })),
+        "advisories",
+      ).map((f) => f.package);
+
+    expect(listed("branch")).toEqual(listed("update"));
+    expect(listed("branch").length).toBeGreaterThan(0);
+  });
+
+  it("drops a fix value that names no fix kind of the report", () => {
+    expect(fitFilters2(composite, { ...EMPTY_FILTERS, fix: ["constructor", "update"] }).fix).toEqual([
+      "update",
+    ]);
+  });
+
+  it("opens prio=none as the zero verdicts, which list the packages with no grade", () => {
+    const fitted = fitFilters2(wallabag, { ...EMPTY_FILTERS, prio: ["none"] });
+    const listed = applyFilters2(wallabag, state({ view: "packages" }, fitted), "packages");
+
+    expect([...fitted.verdict].sort()).toEqual(["finished", "ok", "unknown"]);
+    expect(new Set(listed.map((f) => f.verdict))).toEqual(new Set(["ok", "finished"]));
+    expect(listed).toHaveLength(97);
+  });
+});
+
 describe("railGroups2", () => {
   it("offers each graded verdict with a package under the title Grade, in run.graded_verdicts order", () => {
     const grade = railGroups2(composite, state()).find((group) => group.group === "verdict");

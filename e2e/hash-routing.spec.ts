@@ -119,6 +119,22 @@ test.describe("on a report-2 page", () => {
     expect(await report.hash()).toBe("#view=findings&verdict=low");
   });
 
+  test("an old fix=branch or fix=move fragment opens fix=update or fix=upgrade", async () => {
+    await report.gotoReport2WithHash("composite", "view=advisories&fix=update");
+    const update = await report.rows();
+    await report.gotoReport2WithHash("composite", "view=advisories&fix=branch");
+    expect(await report.rows()).toEqual(update);
+    expect(update.length).toBeGreaterThan(0);
+    expect(await report.hash()).toBe("#view=advisories&fix=update");
+    await report.gotoReport2WithHash("composite", "view=advisories&fix=move");
+    expect(await report.hash()).toBe("#view=advisories&fix=upgrade");
+  });
+
+  test("an old prio=none fragment opens the zero verdicts", async () => {
+    await report.gotoReport2WithHash("composite", "view=packages&prio=none");
+    expect(await report.hash()).toBe("#view=packages&verdict=finished%2Cunknown%2Cok");
+  });
+
   test("an old verdict=<flag> fragment opens flag=", async () => {
     await report.gotoReport2WithHash("composite", "verdict=left-behind");
     expect(await report.rows()).toEqual(["symfony/monolog-bridge", "guzzlehttp/guzzle"]);
