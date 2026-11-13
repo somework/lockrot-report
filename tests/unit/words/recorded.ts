@@ -111,13 +111,10 @@ export function lockrotRecordings(): RecordedCase[] {
   return recordedCases().filter(({ recordedBy }) => recordedBy === "lockrot");
 }
 
-/** Words in a golden of the pinned model that MODEL r18 calls a model bug. The page keeps the SPEC
- *  words, and the comparison reads the golden with `to` for `from`. Empty the list at the repin whose
- *  model prints `to`. */
-export const MODEL_LAGS: readonly { id: string; from: string; to: string }[] = [
-  // The model's check-reason vocabulary has no `undated`, so it prints the id (SPEC §7.9.21: "no date").
-  { id: "push-undated‡", from: "(undated)", to: "(no date)" },
-];
+/** Words in a golden of the pinned model that the model's owner calls a model bug. The page keeps
+ *  the SPEC words, and the comparison reads the golden with `to` for `from`. Empty the list at the
+ *  repin whose model prints `to`. */
+export const MODEL_LAGS: readonly { id: string; from: string; to: string }[] = [];
 
 /** The model's own inputs with each `MODEL_LAGS` entry corrected, under the names lockrot records. */
 export function modelCases(): ModelCase[] {

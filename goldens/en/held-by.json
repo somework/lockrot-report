@@ -816,7 +816,19 @@
   "many-dependents": [
     null
   ],
+  "mc-baseline-provide-unmatched-dagger": [
+    null
+  ],
   "mc-baseline-refused-dagger": [
+    null
+  ],
+  "mc-baseline-synced-non-dev-dagger": [
+    null
+  ],
+  "mc-baseline-unsynced-dagger": [
+    null
+  ],
+  "mc-baseline-unsynced-hashless-dagger": [
     null
   ],
   "mc-blocking-off-both-dagger": [
