@@ -48,8 +48,8 @@ describe("a case recording that holds its parents' findings (R5-19)", () => {
   });
 });
 
-describe("a model golden that the pinned model gets wrong", () => {
-  test("reads the corrected words, and the pinned model still prints the listed wrong words", () => {
+describe("the model goldens with each MODEL_LAGS entry corrected", () => {
+  test("read the SPEC words, and each listed lag is still in the pinned model", () => {
     const raw = new Map(pinnedModelCases().map(({ id, golden }) => [id, golden]));
     const fixed = new Map(modelCases().map(({ id, golden }) => [id, golden]));
     const lines = (golden: { checks: string; why: string[] } | undefined): string[] =>
