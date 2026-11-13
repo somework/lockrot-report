@@ -85,15 +85,15 @@ the report-1 screen.
 
 ## Releasing
 
-1. Before the release commit, reconcile CHANGELOG.md in a PR of its own, because step 3 commits
-   only the version and the pin. Move the `Unreleased` section under the version heading. A pre-release
-   has no heading of its own: its notes are the entry of the version it leads to. When that entry
-   exists, a bullet that changes behaviour the entry already describes replaces that line, and is not
-   added beside it. A bullet that removes behaviour that no final release had removes that line and
-   adds nothing, because the entry compares with the previous final release. No line names a
-   pre-release. The version heading stays undated until the final release commit of step 3. Set
-   `version` in `package.json` and both `version` fields of `package-lock.json` (the root and `packages[""]`)
-   to the same number. `npm version <version> --no-git-tag-version` sets all three.
+1. Reconcile CHANGELOG.md in one place, as lockrot's recipe does. For a final release, that place
+   is the squash merge of the release branch (`release/X.Y.0`) into `main`. In that merge, reconcile
+   the branch's CHANGELOG.md with the one on `main`, and move the `Unreleased` section under the
+   version heading. A pre-release has no heading of its own: its notes are the entry of the version
+   it leads to, on its release branch. When that entry exists, a bullet that changes behaviour the
+   entry already describes replaces that line, and is not added beside it. A bullet that removes
+   behaviour that no final release had removes that line and adds nothing, because the entry
+   compares with the previous final release. No line names a pre-release. The version heading stays
+   undated until the final release commit of step 3.
 2. Pick the pin. A pre-release pins the lockrot commit that changes the contract bundle. A final
    tag pins the lockrot commit V that vendors an rc of the same bundle. Lockrot's main or a lockrot
    tag must hold the pin: `node scripts/contract.mjs reachable` says whether it does. For a final
@@ -102,13 +102,17 @@ the report-1 screen.
    its branch is the tag. The release workflow needs a green CI run of a push of V to any branch
    where lockrot's `ci.yml` runs on push, such as `main`, `release/**` or `integration/**`. It also
    needs that full check or a green CI run of a push to lockrot's main.
-3. Run `node scripts/contract.mjs repin <pin>`. For a final tag, commit only the version and the
-   pin: `package.json`, the two `version` fields of `package-lock.json`, the CHANGELOG heading and
-   `contract/lockrot.json`. If `repin` changed another file under `contract/`, V does not vendor
-   the same bundle, so stop. For a final tag, that commit also dates the CHANGELOG heading with the
-   release day, the UTC day of the tag: `## [X.Y.Z] - YYYY-MM-DD`, as Keep a Changelog asks. A
-   pre-release leaves the heading undated. Merge the commit into main for a final tag, or into its
-   release branch for a pre-release.
+3. For a final tag, start this commit from the merge of step 1. Without that merge, `repin`
+   changes other files under `contract/`. Run `node scripts/contract.mjs repin <pin>`. Set
+   `version` in `package.json` and both `version` fields of `package-lock.json` (the root and
+   `packages[""]`) to the same number. `npm version <version> --no-git-tag-version` sets all three.
+   For a final tag, commit only the version and the pin: `package.json`, the two `version` fields of
+   `package-lock.json`, the CHANGELOG heading and `contract/lockrot.json`. If `repin` changed
+   another file under `contract/`, V does not vendor the same bundle, so stop. For a final tag, that
+   commit also dates the CHANGELOG heading with the release day, the UTC day of the tag:
+   `## [X.Y.Z] - YYYY-MM-DD`, as Keep a Changelog asks. The release workflow refuses a final tag
+   whose heading has no date. A pre-release leaves the heading undated. Merge the commit into main
+   for a final tag, or into its release branch for a pre-release.
 4. Before the first final tag, list the rulesets with `gh api repos/somework/lockrot-report/rulesets`.
    The list leaves out each ruleset's conditions and rules, so read each one with
    `gh api repos/somework/lockrot-report/rulesets/<id>`. Confirm that a tag ruleset on
