@@ -59,6 +59,52 @@ test("the published files come from a build that ran no install script, and matc
   expect(publish.indexOf("sha256sum --check")).toBeLessThan(publish.indexOf("attest-build-provenance"));
 });
 
+const needs = (job: string): string[] =>
+  (/^ {4}needs: \[?([^\]\n]*)\]?$/m.exec(job)?.[1] ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+
+const browsers = (workflow: string): string[] =>
+  (/^ {8}browser: \[([^\]]*)\]$/m.exec(workflow)?.[1] ?? "").split(",").map((name) => name.trim());
+
+describe("the e2e gate runs one job per browser on the gates job's build", () => {
+  const e2e = (): [string, string][] => [...jobs()].filter(([, job]) => job.includes("npx playwright test"));
+
+  test("one job per browser of ci.yml's matrix, each on its own browser", () => {
+    const ci = readFileSync(join(process.cwd(), ".github", "workflows", "ci.yml"), "utf8");
+
+    expect(e2e().map(([, job]) => browsers(job))).toEqual([browsers(ci)]);
+    expect(
+      e2e().map(([, job]) => /npx playwright test --project=\$\{\{ matrix\.browser \}\}\n/.test(job)),
+    ).toEqual([true]);
+  });
+
+  test("each e2e job tests the dist the gates job digested, and builds none of its own", () => {
+    const digester = [...jobs()].filter(([, job]) => job.includes("sha256sum report.html"));
+
+    expect(
+      digester.map(([id, job]) => [id, /upload-artifact[^\n]*\n {8}with:\n {10}name: dist\n/.test(job)]),
+    ).toEqual([["gates", true]]);
+    for (const [id, job] of e2e()) {
+      expect({ id, needs: needs(job) }).toEqual({ id, needs: ["gates"] });
+      expect({ id, downloads: /download-artifact[^\n]*\n {8}with:\n {10}name: dist\n/.test(job) }).toEqual({
+        id,
+        downloads: true,
+      });
+      expect({ id, builds: /npm run build|vite build/.test(job) }).toEqual({ id, builds: false });
+    }
+  });
+
+  test("publish needs every other job, so no red gate or e2e job publishes", () => {
+    const all = jobs();
+    const others = [...all.keys()].filter((id) => id !== "publish");
+
+    expect(others).toEqual(expect.arrayContaining(["gates", "e2e", "build"]));
+    expect(needs(all.get("publish") ?? "").sort()).toEqual(others.sort());
+  });
+});
+
 /** The shell of the gates step named `name`, as the runner gets it. */
 function stepScript(name: string): string {
   const gates = jobs().get("gates") ?? "";
