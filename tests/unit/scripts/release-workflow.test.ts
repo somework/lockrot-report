@@ -68,32 +68,43 @@ const needs = (job: string): string[] =>
 const browsers = (workflow: string): string[] =>
   (/^ {8}browser: \[([^\]]*)\]$/m.exec(workflow)?.[1] ?? "").split(",").map((name) => name.trim());
 
+/** Whether one step of `job` uses `action` on the artifact named `name`, whatever the key order. */
+const movesArtifact = (job: string, action: "upload-artifact" | "download-artifact", name: string): boolean =>
+  job
+    .split(/\n {6}- /)
+    .some(
+      (step) => step.includes(`actions/${action}@`) && new RegExp(`^ {10}name: ${name}$`, "m").test(step),
+    );
+
 describe("the e2e gate runs one job per browser on the gates job's build", () => {
   const e2e = (): [string, string][] => [...jobs()].filter(([, job]) => job.includes("npx playwright test"));
 
-  test("one job per browser of ci.yml's matrix, each on its own browser", () => {
+  test("one job runs the suite, once per browser of ci.yml's matrix, each on its own browser", () => {
     const ci = readFileSync(join(process.cwd(), ".github", "workflows", "ci.yml"), "utf8");
 
-    expect(e2e().map(([, job]) => browsers(job))).toEqual([browsers(ci)]);
     expect(
-      e2e().map(([, job]) => /npx playwright test --project=\$\{\{ matrix\.browser \}\}\n/.test(job)),
-    ).toEqual([true]);
+      e2e().map(([id, job]) => ({
+        id,
+        browsers: browsers(job),
+        project: /npx playwright test --project=\$\{\{ matrix\.browser \}\}\n/.test(job),
+      })),
+    ).toEqual([{ id: "e2e", browsers: browsers(ci), project: true }]);
   });
 
-  test("each e2e job tests the dist the gates job digested, and builds none of its own", () => {
+  test("the e2e job tests the dist the gates job digested, and builds none of its own", () => {
     const digester = [...jobs()].filter(([, job]) => job.includes("sha256sum report.html"));
 
     expect(
-      digester.map(([id, job]) => [id, /upload-artifact[^\n]*\n {8}with:\n {10}name: dist\n/.test(job)]),
-    ).toEqual([["gates", true]]);
-    for (const [id, job] of e2e()) {
-      expect({ id, needs: needs(job) }).toEqual({ id, needs: ["gates"] });
-      expect({ id, downloads: /download-artifact[^\n]*\n {8}with:\n {10}name: dist\n/.test(job) }).toEqual({
+      digester.map(([id, job]) => ({ id, uploadsDist: movesArtifact(job, "upload-artifact", "dist") })),
+    ).toEqual([{ id: "gates", uploadsDist: true }]);
+    expect(
+      e2e().map(([id, job]) => ({
         id,
-        downloads: true,
-      });
-      expect({ id, builds: /npm run build|vite build/.test(job) }).toEqual({ id, builds: false });
-    }
+        needs: needs(job),
+        downloadsDist: movesArtifact(job, "download-artifact", "dist"),
+        builds: /npm run build|vite build/.test(job),
+      })),
+    ).toEqual([{ id: "e2e", needs: ["gates"], downloadsDist: true, builds: false }]);
   });
 
   test("publish needs every other job, so no red gate or e2e job publishes", () => {
@@ -102,6 +113,15 @@ describe("the e2e gate runs one job per browser on the gates job's build", () =>
 
     expect(others).toEqual(expect.arrayContaining(["gates", "e2e", "build"]));
     expect(needs(all.get("publish") ?? "").sort()).toEqual(others.sort());
+  });
+
+  test("no condition lets publish run past a red job, and no job or step lets its failure pass", () => {
+    const publish = jobs().get("publish") ?? "";
+
+    expect({ publishIf: /^ {4}if:/m.exec(publish)?.[0] ?? null }).toEqual({ publishIf: null });
+    expect({ continueOnError: /continue-on-error/.exec(WORKFLOW)?.[0] ?? null }).toEqual({
+      continueOnError: null,
+    });
   });
 });
 

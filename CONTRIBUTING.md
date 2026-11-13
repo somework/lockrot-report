@@ -120,5 +120,6 @@ the report-1 screen.
    tag whose pin lacks a green CI push run, or lacks both a green full check and a green CI run on
    main. A pre-release needs no such run, because lockrot's renderer test fails on its pin until
    lockrot vendors it. The workflow runs the gates of ci.yml and, as ci.yml does, the browser suite
-   in one job per browser on the gates job's build. It then builds, attests and publishes.
+   in one job per browser on the gates job's build. Beside them, the build job builds the release
+   files. After every gate, e2e and build job passes, the publish job attests and publishes them.
 5. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.
