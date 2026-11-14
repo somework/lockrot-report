@@ -339,7 +339,7 @@ export function phpStateClauses(report: Pick<Report2, "run" | "findings">): stri
   const s11 = capped.map((f) => signalData(f, "S11")).find((data) => data !== null) ?? null;
   return [
     head,
-    ...(window.platform_override === null
+    ...(window.platform_override === null || run.move_check?.reason === "platform_config_invalid"
       ? []
       : [
           `Composer solves at ${window.platform_override}, the PHP that config.platform.php sets in Composer's config, not the PHP of the machine`,
