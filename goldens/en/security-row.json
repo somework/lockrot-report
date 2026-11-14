@@ -2060,6 +2060,15 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "mc-joint-unsafe-holder-dagger": [
+    "1 high advisory",
+    "15 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "8.x the move clears 1 of 1 from 8.0.1",
+    "upgrade",
+    "after it: 0, ok"
+  ],
   "no-feed-accepted-dagger": [
     "advisories not known",
     "not checked (no repository publishes advisories)"

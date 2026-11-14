@@ -9424,6 +9424,33 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
+  "mc-joint-unsafe-holder-dagger": [
+    {
+      "branch": "8.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "8.0.1",
+      "age": "0.3y",
+      "php": "^8.1",
+      "php_words": null,
+      "bar": "8.0.1, released 0.3 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "7.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "7.15.2",
+      "age": "0.3y",
+      "php": "^7.2.5 || ^8.0",
+      "php_words": null,
+      "bar": "7.15.2, released 0.3 years ago",
+      "folded_in": null
+    }
+  ],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [],

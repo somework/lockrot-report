@@ -253,6 +253,7 @@
   "host-accept-expired-dagger": null,
   "host-accepted-dagger": null,
   "host-unsupported": null,
+  "mc-joint-unsafe-holder-dagger": "checked with the solver of Composer 2.10.3 against the lock, with advisory blocking turned off by config.audit.block-insecure · ext-*, lib-*, php-debug, php-ipv6 and php-zts requirements not checked",
   "no-feed-accepted-dagger": null,
   "no-feed-dagger": null,
   "no-tag-dagger": null,

@@ -3727,6 +3727,24 @@
       "value": "last push not read (host not supported)"
     }
   ],
+  "mc-joint-unsafe-holder-dagger": [
+    {
+      "label": "installed",
+      "value": "7.10.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "7.x last",
+      "value": "7.15.2 · 2026-07-01 · 0.3 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "8.0.1 · 2026-07-02 · 0.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
   "no-feed-accepted-dagger": [
     {
       "label": "installed",

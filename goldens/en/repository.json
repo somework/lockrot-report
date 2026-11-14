@@ -253,6 +253,7 @@
   "host-accept-expired-dagger": "lockrot cannot ask codeberg.org about repository activity",
   "host-accepted-dagger": "lockrot cannot ask codeberg.org about repository activity",
   "host-unsupported": "lockrot cannot ask codeberg.org about repository activity",
+  "mc-joint-unsafe-holder-dagger": "GitHub github.com/guzzle/guzzle: last push 2026-09-06 · fetched 2026-10-01 (cached 2026-10-01)",
   "no-feed-accepted-dagger": "GitHub github.com/composer/ca-bundle: last push 2026-10-01 · fetched 2026-10-01",
   "no-feed-dagger": "GitHub github.com/composer/ca-bundle: last push 2026-10-01 · fetched 2026-10-01",
   "no-tag-dagger": "GitHub github.com/matomo-org/referrer-spam-list: last push 2026-09-22 · fetched 2026-10-01 (cached 2026-10-01)",
