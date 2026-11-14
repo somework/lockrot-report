@@ -60,6 +60,8 @@ function checkoutsKeepingToken(text: string): string[] {
     if (head === null) return [];
     const indent = head[1]?.length ?? 0;
     const step = block(lines, at, indent);
+    // The guard reads no flow mapping, so a checkout step written as one fails it.
+    if (/^\s*-\s*\{/.test(line) && step.join("\n").includes("actions/checkout@")) return [step.join("\n")];
     const checkout = /^\s*(-\s+)?uses:\s*["']?actions\/checkout@/m.test(step.join("\n"));
     const withAt = step.findIndex((key) => /^\s*(-\s+)?with:\s*(#.*)?$/.test(key) && key.indexOf("with:") === indent + 2);
     const inputs = withAt === -1 ? [] : block(step, withAt, indent + 2).slice(1);
@@ -81,6 +83,9 @@ test.each([
   ["- uses: actions/checkout@abc # v7.0.1\n  with:\n    path: |\n      persist-credentials: false", 1],
   ["- uses: actions/checkout@abc # v7.0.1\n  with:\n      # checkout path\n    path: |\n      persist-credentials: false", 1],
   ["- uses: actions/checkout@abc # v7.0.1\n  with:\n    fetch-depth: 0\n    persist-credentials: false", 0],
+  ["- {uses: actions/checkout@abc}\n- uses: actions/checkout@abc # v7.0.1\n  with:\n    persist-credentials: false", 1],
+  ["- {uses: actions/checkout@abc, with: {persist-credentials: false}}", 1],
+  ["- uses: actions/checkout@abc # v7.0.1\n  with: {persist-credentials: false}", 1],
 ])("%j keeps the token in %i checkout steps", (text, kept) => {
   expect(checkoutsKeepingToken(text)).toHaveLength(kept);
 });
