@@ -61,8 +61,12 @@ function checkoutsKeepingToken(text: string): string[] {
     const step = block(lines, at, indent);
     const checkout = /^\s*(-\s+)?uses:\s*["']?actions\/checkout@/m.test(step.join("\n"));
     const withAt = step.findIndex((key) => /^\s*(-\s+)?with:\s*(#.*)?$/.test(key) && key.indexOf("with:") === indent + 2);
-    const inputs = withAt === -1 ? [] : block(step, withAt, indent + 2).slice(1);
-    const dropsToken = inputs.some((input) => /^\s+persist-credentials:\s*["']?false["']?\s*(#.*)?$/.test(input));
+    const inputs = (withAt === -1 ? [] : block(step, withAt, indent + 2).slice(1)).filter((l) => l.trim() !== "");
+    const keyIndent = inputs[0]?.search(/\S/);
+    const dropsToken = inputs.some(
+      (input) =>
+        input.search(/\S/) === keyIndent && /^\s+persist-credentials:\s*["']?false["']?\s*(#.*)?$/.test(input),
+    );
     return checkout && !dropsToken ? [step.join("\n")] : [];
   });
 }
@@ -73,6 +77,7 @@ test.each([
   ["- name: Checkout\n  uses: actions/checkout@abc # v7.0.1\n  with:\n    persist-credentials: 'false' # no token", 0],
   ["- uses: actions/checkout@abc # v7.0.1\n- uses: actions/cache@abc # v6.1.0\n  with:\n    persist-credentials: false", 1],
   ["- name: Checkout\n  uses: actions/checkout@abc # v7.0.1\n  env:\n    persist-credentials: 'false'", 1],
+  ["- uses: actions/checkout@abc # v7.0.1\n  with:\n    path: |\n      persist-credentials: false", 1],
   ["- uses: actions/checkout@abc # v7.0.1\n  with:\n    fetch-depth: 0\n    persist-credentials: false", 0],
 ])("%j keeps the token in %i checkout steps", (text, kept) => {
   expect(checkoutsKeepingToken(text)).toHaveLength(kept);
