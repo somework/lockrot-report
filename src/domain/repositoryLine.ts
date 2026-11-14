@@ -21,9 +21,11 @@ function readLine(finding: Finding): string {
         ? `, archived flag not read${archivedFlagRead === undefined ? "" : ` (${causeWord(archivedFlagRead.reason, finding.origin.kind)})`}`
         : "";
   const fetched = activity.fetched_at === null ? "" : ` · fetched ${dateOf(activity.fetched_at)}`;
-  const cached = activity.cached_at === null ? "" : ` (cached ${dateOf(activity.cached_at)})`;
-  return `${place}: ${last}${archived}${fetched}${cached}`;
+  return `${place}: ${last}${archived}${fetched}${cachedWords(finding)}`;
 }
+
+const cachedWords = ({ activity }: Finding): string =>
+  activity.cached_at === null ? "" : ` (cached ${dateOf(activity.cached_at)})`;
 
 function notReadLine(finding: Finding): string {
   const { activity } = finding;
@@ -42,7 +44,7 @@ export function repositoryLine(finding: Finding): string {
     case "read":
       return readLine(finding);
     case "not_found":
-      return `${activity.forge === null ? "" : `${forgeWord(activity.forge)} `}${activity.host}/${activity.repo}: the host answered 404 (private, renamed or removed)`;
+      return `${activity.forge === null ? "" : `${forgeWord(activity.forge)} `}${activity.host}/${activity.repo}: the host answered 404 (private, renamed or removed)${cachedWords(finding)}`;
     default:
       return notReadLine(finding);
   }

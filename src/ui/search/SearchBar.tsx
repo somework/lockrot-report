@@ -11,7 +11,10 @@ import { ActiveFilters } from "./ActiveFilters";
 import { EMPTY_FILTERS, type State } from "../../state/types";
 import "./search.css";
 
-const PLACEHOLDER = "Filter: guzzle, flag:left-behind, verdict:critical, score:>=16";
+// Fits the field at 320px, the narrowest width the page supports (DESIGN.md §6); `?` lists every key.
+const PLACEHOLDER = "flag:stale score:>=16";
+// A flag or score example can match no advisory row, and an empty list reads as a broken filter.
+const ADVISORIES_PLACEHOLDER = "a package name";
 
 /**
  * "N of M …", read off the same domain functions each tab uses to decide what it lists, so this line
@@ -65,7 +68,12 @@ function activeFilterCount(state: State): number {
  * a clean report with zero flagged packages still shows "0 of 0 flagged packages" while the search
  * box beside it is hidden, and this keeps that split rather than collapsing it to one flag.
  */
-export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
+interface SearchBarProps {
+  inputRef: Ref<HTMLInputElement>;
+  shortcutsOn: boolean;
+}
+
+export function SearchBar({ inputRef, shortcutsOn }: SearchBarProps) {
   const { model, state, dispatch } = useReport();
   const { report } = model;
   const filterable = population2(report, state.view).length > 0;
@@ -84,7 +92,7 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
             type="search"
             className="search-input"
             aria-label="Filter packages"
-            placeholder={PLACEHOLDER}
+            placeholder={state.view === "advisories" ? ADVISORIES_PLACEHOLDER : PLACEHOLDER}
             value={state.q}
             onInput={(event) => {
               dispatch({ type: "query", q: event.currentTarget.value });
@@ -102,13 +110,8 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
           </button>
         </div>
       )}
-      {/* PD-GLOSSARY-1: the full keys-and-syntax paragraph moved into the glossary's "Keys and
-          search" section, which opens where the reader already is instead of every findings list
-          carrying its own copy. What stays here is the one thing a reader would otherwise have no
-          way to discover: that pressing ? gets them the rest. One line reads the same at 320px,
-          where the old paragraph pushed the list down a full screen (DESIGN.md §8), and at 1440px,
-          where it no longer competes with the search box for attention. */}
-      {filterable && (
+      {/* PD-GLOSSARY-1: the rest of the help lives in the glossary. With the shortcuts off, ? opens nothing. */}
+      {filterable && shortcutsOn && (
         <p className="hint">
           Press <kbd>?</kbd> for keys and search syntax.
         </p>

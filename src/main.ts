@@ -18,8 +18,9 @@ function screenFor(error: NormalizeError) {
   return error.kind === "report-1" ? h(Report1Screen, { version: error.version }) : h(ErrorScreen, { error });
 }
 
-function renderResult(target: Element, result: ParseResult): void {
-  render(result.ok ? h(RenderGuard, { model: result.model }) : screenFor(result.error), target);
+/** `title` is given only when the page owns the document (autoboot), never to an embedder. */
+function renderResult(target: Element, result: ParseResult, title?: string): void {
+  render(result.ok ? h(RenderGuard, { model: result.model, title }) : screenFor(result.error), target);
 }
 
 export interface MountHandle {
@@ -80,7 +81,7 @@ function autoboot(): void {
   // element, not just `Document`/`DocumentType` — no `?? ""` fallback needed here.
   const text = dataEl.textContent;
   if (text.trim() === "") return;
-  renderResult(appEl, parseBundle(text));
+  renderResult(appEl, parseBundle(text), document.title);
 }
 
 window.LockrotReport = { version, mount, parse };

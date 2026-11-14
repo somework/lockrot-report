@@ -3,8 +3,8 @@ import { useEffect, useState } from "preact/hooks";
 
 /**
  * Whether an element's content is wider than the element, now and after every resize of either —
- * the All packages wrap asks it so that, only while its table actually scrolls sideways, the wrap
- * becomes a named, focusable region a keyboard can scroll (PD-PACKAGES-5, DESIGN.md §5). Without
+ * a table wrap asks it so that, only while its table actually scrolls sideways, the wrap becomes a
+ * named, focusable region a keyboard can scroll (PD-PACKAGES-5, DESIGN.md §5). Without
  * `ResizeObserver` (an old engine, the unit tests' DOM) it answers false: nothing is announced as a
  * scroller that the page cannot watch.
  */

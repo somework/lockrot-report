@@ -3,13 +3,11 @@ import { useId } from "preact/hooks";
 import type { Report2 } from "../../model/report";
 import { gradeTone } from "../../domain/findingRow";
 import { depthSentence } from "../../domain/overviewBand";
-import { applyFilters2, population2 } from "../../domain/list";
+import { applyFilters2, population2, radiusEmpty } from "../../domain/list";
 import {
-  FOLD_OTHER,
-  FOLD_SELF,
   FOLD_SINGLES,
-  isFoldOpen,
   isRowOpen,
+  isSinglesOpen,
   pulledTree,
   rowKey,
   type OpenInput,
@@ -18,19 +16,20 @@ import {
   childKey2,
   parentKey2,
   RADIUS_WORDS,
-  radiusKeys2,
-  receiptKey2,
   radiusAnswer2,
+  radiusTrees2,
   radiusLayout2,
-  radiusRowSay,
+  radiusRowFacts,
   type RadiusFinding2,
+  type RadiusKey,
+  type RadiusLayout2,
   type RadiusRow2,
 } from "../../domain/radius2";
 import { useReport } from "../context";
-import { toneClass } from "../common/common";
+import { RowHint, RowHintContext, toneClass, useRowDescription } from "../common/common";
 import { usePrinted } from "../print/printContext";
 import { useNarrow } from "../useWide";
-import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
+import { firstRows, treeStop } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { FlagPills } from "./FlagPills";
 import { useReport2 } from "./useReport";
@@ -47,27 +46,43 @@ function Name({ dev, pkg, version }: { dev: boolean; pkg: string; version: strin
 }
 
 interface ChildProps {
+  /** Packages are drawn under it, one level deeper. */
+  parent: boolean;
   finding: RadiusFinding2;
   depth: number;
   note: string | null;
   report: Report2;
-  first: boolean;
+  /** The row is its tree's Tab stop. */
+  stop: boolean;
 }
 
-function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
-  const { state, dispatch, cursor } = useReport();
+function ChildRow2({ finding, depth, parent, note, report, stop }: ChildProps) {
+  const { state, dispatch } = useReport();
+  const id = useId();
+  const described = useRowDescription(`${id}-said`);
   return (
     <li
+      role="treeitem"
+      aria-level={depth + 2}
+      aria-expanded={parent ? "true" : undefined}
       className={`r2-kid ${toneClass(gradeTone(finding.verdict))}`}
       style={{ "--depth": String(depth) }}
       data-pkg={finding.package}
       aria-label={finding.package}
+      aria-describedby={described}
       aria-current={state.pkg === finding.package ? "true" : undefined}
-      tabIndex={rowTabIndex(finding.package, cursor, first)}
+      tabIndex={stop ? 0 : -1}
       {...openInteractions(finding.package, dispatch)}
     >
-      <span className="r2-score">{finding.score.total}</span>
+      {/* The description reads words without the CSS capitals of the spans below, which Chromium
+          would read out. */}
+      <span id={`${id}-said`} hidden>
+        score {finding.score.total} {finding.verdict}
+      </span>
       <span className="r2-grade">{finding.verdict}</span>
+      <span className="r2-score">
+        <span className="r2-lbl">score</span> {finding.score.total}
+      </span>
       <Name dev={finding.dev} pkg={finding.package} version={finding.version} />
       {note !== null && <span className="r2-via">{note}</span>}
       <span className="r2-pills">
@@ -78,58 +93,81 @@ function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
 }
 
 function ParentRow2({
+  layout,
   row,
   rank,
   input,
   report,
-  expandable,
-  first,
+  stopKey,
 }: {
+  layout: RadiusLayout2;
   row: RadiusRow2;
-  rank: number | null;
+  rank: number;
   input: OpenInput;
   report: Report2;
-  expandable: boolean;
-  first: ReadonlySet<string>;
+  /** The key of the row that is this tree's Tab stop. */
+  stopKey: string | null;
 }) {
-  const { state, dispatch, cursor } = useReport();
-  const canOpen = expandable && row.count > 0;
-  const open = canOpen && isRowOpen(row, input);
-  const kidsId = `${useId()}-kids`;
+  const { state, dispatch } = useReport();
+  const isStop = stopKey === parentKey2(row.package);
+  const printed = usePrinted();
+  const canOpen = row.count > 0;
+  const open = canOpen && (printed || isRowOpen(layout, row, input));
+  const id = useId();
+  const kidsId = `${id}-kids`;
+  const facts = radiusRowFacts(report, row);
+  const own = [
+    ...(row.self === null ? [] : [`${id}-self`]),
+    ...(facts.count === null ? [] : [`${id}-count`]),
+    ...(facts.mix === null && facts.note === null ? [] : [`${id}-mix`]),
+  ];
+  const described = useRowDescription(...own);
   const toggle = (event: Event) => {
     event.stopPropagation();
     dispatch({ type: "disclose", key: rowKey(row.package), open: !open });
   };
   return (
     <li
+      role="treeitem"
+      aria-expanded={canOpen ? (open ? "true" : "false") : undefined}
       className={open ? "r2-row is-open" : "r2-row"}
       data-pkg={row.package}
       aria-label={row.package}
+      aria-describedby={described}
       aria-current={state.pkg === row.package ? "true" : undefined}
-      tabIndex={rowTabIndex(row.package, cursor, first.has(parentKey2(row.package)))}
+      tabIndex={isStop ? 0 : -1}
       {...openInteractions(row.package, dispatch)}
     >
       <div className="r2-line">
         <span className="r2-rank" aria-hidden="true">
-          {rank ?? ""}
+          {rank}
         </span>
         <span className="r2-head">
           <Name dev={row.dev} pkg={row.package} version={row.version} />
           {row.self !== null && (
-            <span className={`r2-self ${toneClass(gradeTone(row.self.verdict))}`}>
-              {RADIUS_WORDS.itself(row.self.verdict)}
-            </span>
+            <>
+              <span className={`r2-self ${toneClass(gradeTone(row.self.verdict))}`}>
+                {RADIUS_WORDS.itself(row.self.verdict)}
+              </span>
+              <span id={`${id}-self`} hidden>
+                {RADIUS_WORDS.itself(row.self.verdict)}
+              </span>
+            </>
           )}
         </span>
-        <span className="r2-say">
-          {radiusRowSay(report, row)}
-          {row.count > 0 && row.unfiltered > row.count && (
-            <span className="r2-also"> {RADIUS_WORDS.filtered(row.unfiltered - row.count)}</span>
-          )}
-          {row.elsewhere.length > 0 && (
-            <span className="r2-also"> {RADIUS_WORDS.elsewhere(row.elsewhere.length)}</span>
-          )}
-        </span>
+        {facts.count !== null && (
+          <span className="r2-count" id={`${id}-count`}>
+            <span className="r2-n">{facts.count}</span> <span className="r2-unit">flagged</span>
+          </span>
+        )}
+        {(facts.mix !== null || facts.note !== null) && (
+          <span className="r2-mix" id={`${id}-mix`}>
+            {facts.mix ?? facts.note}
+            {row.count > 0 && row.unfiltered > row.count && (
+              <span className="r2-also"> · {RADIUS_WORDS.filtered(row.unfiltered - row.count)}</span>
+            )}
+          </span>
+        )}
         {canOpen && (
           <button
             type="button"
@@ -137,7 +175,7 @@ function ParentRow2({
             aria-expanded={open ? "true" : "false"}
             aria-controls={kidsId}
             aria-label={RADIUS_WORDS.show(row)}
-            tabIndex={innerTabIndex(row.package, cursor, first.has(parentKey2(row.package)))}
+            tabIndex={isStop ? undefined : -1}
             onClick={toggle}
           >
             <span aria-hidden="true">{open ? "▾" : "▸"}</span>
@@ -145,16 +183,23 @@ function ParentRow2({
         )}
       </div>
       {canOpen && (
-        <ul className="r2-kids" id={kidsId} hidden={!open} aria-label={RADIUS_WORDS.listedUnder(row.package)}>
+        <ul
+          className="r2-kids"
+          role="group"
+          id={kidsId}
+          hidden={!open}
+          aria-label={RADIUS_WORDS.listedUnder(row.package)}
+        >
           {open &&
-            pulledTree(row).map((node) => (
+            pulledTree(row).map((node, i, nodes) => (
               <ChildRow2
                 key={node.finding.package}
                 finding={node.finding}
                 depth={node.depth}
+                parent={(nodes[i + 1]?.depth ?? -1) > node.depth}
                 note={node.via.length > 0 ? RADIUS_WORDS.via(node.via) : null}
                 report={report}
-                first={first.has(childKey2(row.package, node.finding.package))}
+                stop={stopKey === childKey2(row.package, node.finding.package)}
               />
             ))}
         </ul>
@@ -197,78 +242,78 @@ function Fold({
 }
 
 /** The Blast radius tab of a report-2 document: on screen the depth sentence, the printed summary
- *  holding it on paper; then each direct requirement on `exposure`, most flagged packages listed
- *  under it first, then the tails `radius.ts` lays out. */
+ *  holding it on paper; then each direct requirement on `exposure`, in lockrot's order. */
 export function RadiusView2() {
-  const { state } = useReport();
+  const { state, cursor } = useReport();
   const { report } = useReport2();
   const narrow = useNarrow();
   const printed = usePrinted();
+  const empty = radiusEmpty(report);
   const depth = printed ? null : depthSentence(report);
-  const layout = radiusLayout2(report, applyFilters2(report, state, "radius"), population2(report, "radius"));
+  const all = population2(report, "radius");
+  const layout = radiusLayout2(report, applyFilters2(report, state, "radius"), all);
+  const answer = radiusAnswer2(report, all);
+  const hintId = `${useId()}-hint`;
   const input: OpenInput = { disclosure: state.disclosure, pkg: state.pkg, narrow };
+  const trees = radiusTrees2(layout, input);
   const first = firstRows(
-    radiusKeys2(layout, input),
+    [...trees.lead, ...trees.singles],
     (entry) => entry.pkg,
     (entry) => entry.key,
   );
-  const rows = (list: readonly RadiusRow2[], from: number, expandable: boolean) =>
+  const stopOf = (keys: readonly RadiusKey[]) =>
+    treeStop(
+      keys,
+      (entry) => entry.pkg,
+      (entry) => entry.key,
+      first,
+      cursor,
+    );
+  const rows = (list: readonly RadiusRow2[], from: number, stop: string | null) =>
     list.map((row, i) => (
       <ParentRow2
         key={row.package}
+        layout={layout}
         row={row}
-        rank={expandable ? from + i : null}
+        rank={from + i}
         input={input}
         report={report}
-        expandable={expandable}
-        first={first}
+        stopKey={stop}
       />
     ));
 
+  if (empty !== null) {
+    return (
+      <section className="radius2" data-surface="radius" aria-label={RADIUS_WORDS.tab}>
+        {!printed && <h2 className="vh">{RADIUS_WORDS.tab}</h2>}
+        {!printed && <p className="empty">{empty}</p>}
+      </section>
+    );
+  }
+
   return (
-    <section className="radius2" data-surface="radius" aria-label="Blast radius">
+    <section className="radius2" data-surface="radius" aria-label={RADIUS_WORDS.tab}>
+      {!printed && <h2 className="vh">{RADIUS_WORDS.tab}</h2>}
       {depth !== null && <p className="r2-depth">{depth}</p>}
-      <p className="r2-answer">{radiusAnswer2(layout)}</p>
+      {answer.length > 0 && <p className="r2-answer">{answer.join(" ")}</p>}
+      {(layout.lead.length > 0 || layout.singles.length > 0) && <RowHint id={hintId} />}
       {layout.lead.length > 0 && (
-        <ul className="r2-list" aria-label={RADIUS_WORDS.list}>
-          {rows(layout.lead, 1, true)}
+        <ul className="r2-list" role="tree" aria-label={RADIUS_WORDS.list}>
+          <RowHintContext.Provider value={hintId}>
+            {rows(layout.lead, 1, stopOf(trees.lead))}
+          </RowHintContext.Provider>
         </ul>
       )}
       {layout.singles.length > 0 && (
         <Fold
           id={FOLD_SINGLES}
-          open={isFoldOpen(layout, FOLD_SINGLES, input)}
+          open={printed || isSinglesOpen(layout, input)}
           head={RADIUS_WORDS.singles(layout.singles.length)}
         >
-          <ul className="r2-list">{rows(layout.singles, layout.lead.length + 1, true)}</ul>
-        </Fold>
-      )}
-      {layout.selfOnly.length > 0 && (
-        <Fold
-          id={FOLD_SELF}
-          open={isFoldOpen(layout, FOLD_SELF, input)}
-          head={RADIUS_WORDS.selfOnly(layout.selfOnly.length)}
-        >
-          <ul className="r2-list">{rows(layout.selfOnly, 0, false)}</ul>
-        </Fold>
-      )}
-      {layout.receipt.length > 0 && (
-        <Fold
-          id={FOLD_OTHER}
-          open={isFoldOpen(layout, FOLD_OTHER, input)}
-          head={RADIUS_WORDS.receipt(layout.receipt.length)}
-        >
-          <ul className="r2-kids is-flat">
-            {layout.receipt.map((entry) => (
-              <ChildRow2
-                key={entry.finding.package}
-                finding={entry.finding}
-                depth={0}
-                note={RADIUS_WORDS.behind(entry.listedUnder, entry.behind)}
-                report={report}
-                first={first.has(receiptKey2(entry.finding.package))}
-              />
-            ))}
+          <ul className="r2-list" role="tree" aria-label={RADIUS_WORDS.singles(layout.singles.length)}>
+            <RowHintContext.Provider value={hintId}>
+              {rows(layout.singles, layout.lead.length + 1, stopOf(trees.singles))}
+            </RowHintContext.Provider>
           </ul>
         </Fold>
       )}

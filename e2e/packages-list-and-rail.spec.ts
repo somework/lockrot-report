@@ -61,6 +61,14 @@ for (const width of [320, 390, 480] as const) {
       expect(await packagesCell(page, "twig/twig", "verdict")).toBe("critical");
       await noPageOverflow(page);
     });
+
+    test("a focused row describes its score and its grade, as a Findings row does", async ({ page }) => {
+      await report.gotoReport2WithHash("composite", "view=packages");
+
+      await expect(packagesRow(page, "twig/twig")).toHaveAccessibleDescription(
+        "Score 32 critical Press Enter on a row to open its package.",
+      );
+    });
   });
 }
 
@@ -196,11 +204,13 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
     page,
   }) => {
     await report.gotoReport2WithHash("composite", "view=advisories");
-    const grade = page.getByRole("group", { name: "Filters" }).getByRole("group", { name: "Grade" });
+    const grade = page
+      .getByRole("group", { name: "Filters", exact: true })
+      .getByRole("group", { name: "Grade" });
     await grade.getByRole("button", { name: /^critical \d+$/ }).click();
     await expect(page).toHaveURL(/[#&]verdict=critical(&|$)/);
-    // composite: `flags.vulnerable.by_verdict` holds 2 critical packages.
-    expect(await report.listedPackageCount()).toBe(2);
+    // composite: `flags.vulnerable.by_verdict` holds 3 critical packages.
+    expect(await report.listedPackageCount()).toBe(3);
 
     await report.gotoReport2WithHash("composite", "view=radius&prio=high");
     await expect(grade.getByRole("button", { name: /^high \d+$/ })).toHaveAttribute("aria-pressed", "true");
@@ -255,7 +265,7 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
       await page.setViewportSize({ width, height: 900 });
       await report.gotoReport2WithHash("baselined-wallabag-main", "view=findings");
       const tall = await page
-        .getByRole("group", { name: "Filters" })
+        .getByRole("group", { name: "Filters", exact: true })
         .getByRole("button")
         .evaluateAll((els) =>
           els.filter((el) => el.getBoundingClientRect().height > 30).map((el) => el.textContent.trim()),
@@ -302,7 +312,9 @@ test.describe("report-2: the All packages table", () => {
     await report.gotoReport2WithHash("composite", "view=packages");
 
     expect(await packagesCell(page, "symfony/polyfill-intl-idn", "ly")).toBe("—");
-    expect(await packagesCellLabel(page, "symfony/polyfill-intl-idn", "ly")).toBe("no date");
+    expect(await packagesCellLabel(page, "symfony/polyfill-intl-idn", "ly")).toBe(
+      "dated only by a commit its tags share",
+    );
     expect(await packagesCell(page, "symfony/polyfill-intl-idn", "age")).toBe("—");
     expect(await packagesCell(page, "symfony/polyfill-intl-idn", "reach")).toBe("1 hop");
     expect(await packagesCell(page, "twig/twig", "verdict")).toBe("critical");

@@ -9,7 +9,8 @@
  * Tab order only on that one row, so Tab from it goes to its own links and then leaves the list.
  *
  * A package listed twice (an Advisories package under two advisories, a Blast radius package under
- * two direct requirements) is the Tab stop on its first row only, so each list keeps one Tab stop.
+ * two direct requirements) is the Tab stop on its first row only, so each list keeps one Tab stop
+ * (each tree on Blast radius: `treeStop`).
  * Every row of the open package still reads as current: they all name it.
  */
 
@@ -56,4 +57,21 @@ export function firstRows<T>(
   }
 
   return first;
+}
+
+/**
+ * The key of the row that is one tree's Tab stop, for a view of several trees that share a cursor
+ * (the ARIA tree pattern gives each tree one stop): the cursor's first row when this tree holds it,
+ * else the tree's first row.
+ */
+export function treeStop<T>(
+  rows: readonly T[],
+  pkg: (row: T) => string,
+  key: (row: T) => string,
+  first: ReadonlySet<string>,
+  cursor: string | null,
+): string | null {
+  const held = rows.find((row) => pkg(row) === cursor && first.has(key(row)));
+  const stop = held ?? rows[0];
+  return stop === undefined ? null : key(stop);
 }

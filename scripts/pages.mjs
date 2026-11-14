@@ -1,13 +1,22 @@
 // Fills the built `dist/report.html` (produced by `npm run build`) with one page per report-2 embed
 // of lockrot's fetched bundle (`scripts/report2-embed.ts`; needs `npm run contract:fetch`), using
-// the same payload escaping as `HtmlFormatter::payload()` (`</` -> `<\/`, `<!--` -> `<\u0021--`).
+// the string escaping of `HtmlFormatter::payload()` (`scripts/payload.mjs`).
 // Also plants pages under `planted/`, which the page sweeps do not list: a malformed report-2, a
-// report-1 document and the composite with a hostile package name. Writes `build/pages/`, which is
+// report-1 document, the composite with a hostile package name, one with a long version and one
+// with an older data date. Writes `build/pages/`, which is
 // what the e2e suite runs against.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { assembleEmbed, METACHAR_NAME, report2Pages } from "./report2-embed.ts";
+import { payload } from "./payload.mjs";
+import {
+  assembleEmbed,
+  BIDI_VERSION,
+  LONG_VERSION,
+  METACHAR_NAME,
+  report2Pages,
+  sheetPages,
+} from "./report2-embed.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIST = join(ROOT, "dist");
@@ -22,15 +31,13 @@ const text = (s) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-// HtmlFormatter::payload(): JSON with unescaped slashes and unicode, then `</` and `<!--` escaped.
-const payload = (bundle) => JSON.stringify(bundle).replace(/<\//g, "<\\/").replace(/<!--/g, "<\\u0021--");
 
 const REPORT2_TITLE = "lockrot report";
 
 function main() {
   mkdirSync(OUT, { recursive: true });
   const template = read(join(DIST, "report.html"));
-  const report2 = report2Pages();
+  const report2 = [...report2Pages(), ...sheetPages()];
   for (const { name, embed } of report2) {
     const page = template
       .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
@@ -56,13 +63,41 @@ function main() {
     .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DATA}}", () => payload(hostile));
   writeFileSync(join(OUT, "planted", "report2-metachar.html"), metachar);
+  // The composite with one graded package on a long branch version, as a real lock can hold.
+  const long = assembleEmbed("composite");
+  long.report.findings = long.report.findings.map((f) =>
+    f.package === "symfony/yaml" ? { ...f, version: LONG_VERSION } : f,
+  );
+  const longPage = template
+    .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DATA}}", () => payload(long));
+  writeFileSync(join(OUT, "planted", "report2-long-version.html"), longPage);
+  // The composite with one graded package on a version that holds bidi controls.
+  const bidi = assembleEmbed("composite");
+  bidi.report.findings = bidi.report.findings.map((f) =>
+    f.package === "symfony/yaml" ? { ...f, version: BIDI_VERSION } : f,
+  );
+  const bidiPage = template
+    .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DATA}}", () => payload(bidi));
+  writeFileSync(join(OUT, "planted", "report2-bidi.html"), bidiPage);
+  // The composite read from cached repository data, so its data date is older than its run.
+  const older = assembleEmbed("composite");
+  older.report.data_date = "2026-09-24T08:00:00+00:00";
+  const olderPage = template
+    .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DATA}}", () => payload(older));
+  writeFileSync(join(OUT, "planted", "report2-older-data.html"), olderPage);
   // The one report-1 bundle the page keeps, for the report-1 screen.
   const report1 = template
     .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DATA}}", () => payload(JSON.parse(read(REPORT1))));
   writeFileSync(join(OUT, "planted", "report1.html"), report1);
-  console.log(`${report2.length + 3} page(s) written to ${OUT}`);
+  console.log(`${report2.length + 6} page(s) written to ${OUT}`);
 }
 
 main();

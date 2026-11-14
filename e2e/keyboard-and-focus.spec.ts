@@ -230,10 +230,10 @@ test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
 
 // PD-ROWS-12: below the wide layout the detail is a sheet over the whole page. Focus used to stay on
 // the row under it, ring and all out of sight (WCAG 2.4.11), with Tab going next to that row's own
-// covered links. 1024 is the sheet at its widest, 390 a phone.
+// covered links. 999 is the sheet at its widest (the split layout starts at 1000), 390 a phone.
 for (const [width, height] of [
   [390, 844],
-  [1024, 768],
+  [999, 768],
 ] as const) {
   test.describe(`PD-ROWS-12 at ${width}×${height}: a sheet over the page holds focus`, () => {
     test.use({ viewport: { width, height } });
@@ -270,18 +270,13 @@ for (const [width, height] of [
 }
 
 test.describe("PD-ROWS-12: one Tab stop per list, and j walks a package listed twice", () => {
-  test("Advisories lists symfony/yaml under three advisories: one Tab stop, and j reaches each of its rows", async () => {
+  test("Advisories lists twig/twig under many advisories: one Tab stop, and j reaches each of its rows", async () => {
     await report.tab("advisories");
     const rows = await report.rows();
-    expect(rows.slice(0, 4)).toEqual([
-      "symfony/polyfill-intl-idn",
-      "symfony/yaml",
-      "symfony/yaml",
-      "symfony/yaml",
-    ]);
+    expect(rows.slice(0, 3)).toEqual(["twig/twig", "twig/twig", "twig/twig"]);
     // Each row used to be a Tab stop of its own, links and all.
     expect(await report.tabStopRowIndexes()).toEqual([0]);
-    expect(new Set(await report.listTabStops())).toEqual(new Set(["symfony/polyfill-intl-idn"]));
+    expect(new Set(await report.listTabStops())).toEqual(new Set(["twig/twig"]));
 
     await report.pressJ();
     expect(await report.focusedRowIndex()).toBe(0);
@@ -311,7 +306,9 @@ test.describe("M7: j/k must not open a package that has no row on screen", () =>
     // lists each direct requirement, so j/k could open a package with no row on screen. The
     // composite's symfony/polyfill-intl-idn sits folded under guzzlehttp/guzzle.
     await report.tab("radius");
-    expect(await report.rows()).toEqual(["guzzlehttp/guzzle"]);
+    expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "guzzlehttp/guzzle"]);
+    await report.pressJ();
+    expect((await report.detail()).name).toBe("friendsofsymfony/oauth-server-bundle");
     await report.pressJ();
     expect((await report.detail()).name).toBe("guzzlehttp/guzzle");
     await report.pressJ(); // a folded package and one with no row are both off screen
@@ -370,8 +367,12 @@ test.describe("shortcuts work on a non-Latin layout (shortcutKey)", () => {
   // layout; both are keys that reader typed on purpose, so neither may act as a shortcut.
   test("a Latin letter on the J position (Dvorak h) does not move the selection", async ({ page }) => {
     await pressOnLayout(page, "h", "KeyJ");
-    await page.waitForTimeout(100);
-    expect(await page.evaluate(() => location.hash)).not.toContain("pkg=");
+    // A J that follows opens the first row only if the h moved nothing.
+    await pressOnLayout(page, "о", "KeyJ");
+    const first = (await page.locator("[data-pkg]").first().getAttribute("data-pkg")) ?? "";
+    await expect
+      .poll(() => page.evaluate(() => new URLSearchParams(location.hash.slice(1)).get("pkg")))
+      .toBe(first);
   });
 
   test("a - on the Slash position (German layout) does not focus search", async ({ page }) => {
@@ -405,7 +406,7 @@ test.describe("report-2: keys on the Findings rows and the detail sheet", () => 
 
   test("Enter on a row opens its sheet and a second Enter keeps it open", async ({ page }) => {
     await page.goto(report2Url("composite") + "#view=findings");
-    const row = page.getByRole("listitem", { name: "symfony/yaml", exact: true });
+    const row = page.getByRole("row", { name: "symfony/yaml", exact: true });
 
     await row.focus();
     await page.keyboard.press("Enter");
@@ -432,5 +433,122 @@ test.describe("report-2: keys on the Findings rows and the detail sheet", () => 
     await expect(sheet).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(detailSurface(page)).toHaveCount(0);
+  });
+});
+
+test.describe("WCAG 2.4.11: the footer never covers the focused filter", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+  test.skip(
+    ({ browserName }) => browserName === "webkit",
+    "WebKit's Tab skips buttons, so it never walks the rail",
+  );
+
+  // The walk must bring the footer into view, the moment the rail shrinks: the last assertion says so.
+  test("each rail button is on top at its own centre as Tab walks the rail", async ({ page }) => {
+    await page.goto(report2Url("composite") + "#view=findings");
+    const buttons = page.locator(".shell-rail button");
+    const count = await buttons.count();
+    expect(count).toBeGreaterThan(0);
+    await buttons.first().focus();
+    const coveredBy = () =>
+      page.evaluate(() => {
+        const active = document.activeElement as HTMLElement;
+        const box = active.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return hit !== null && active.contains(hit) ? null : `${active.textContent} under ${hit?.className}`;
+      });
+
+    for (let at = 1; at < count; at += 1) {
+      await page.keyboard.press("Tab");
+      await expect.poll(coveredBy, { timeout: 2000 }).toBeNull();
+    }
+    await expect(page.locator("html.footer-in-view")).toHaveCount(1);
+  });
+});
+
+// PD-GLOSSARY-12
+test.describe("WCAG 2.1.4: the Keyboard shortcuts switch", () => {
+  test("survives a reload, and with it off j opens nothing and the search hint is gone", async ({ page }) => {
+    const hint = page.getByText("Press ? for keys and search syntax.");
+    await page.goto(report2Url("composite") + "#view=findings");
+    await page.getByRole("button", { name: "What these words mean" }).click();
+    const glossary = page.getByRole("dialog");
+    await glossary.getByText("Keys and search").click();
+    const box = glossary.getByRole("checkbox", { name: "Keyboard shortcuts" });
+    await expect(box).toBeChecked();
+    await expect(hint).toHaveCount(1);
+    await box.uncheck();
+    await page.keyboard.press("Escape");
+    await expect(hint).toHaveCount(0);
+
+    await page.reload();
+    await expect(page.getByRole("searchbox", { name: "Filter packages" })).toBeVisible();
+    await expect(hint).toHaveCount(0);
+    await page.keyboard.press("j");
+    await page.getByRole("button", { name: "What these words mean" }).click();
+    await page.getByRole("dialog").getByText("Keys and search").click();
+    await expect(detailSurface(page)).toHaveCount(0);
+
+    await expect(
+      page.getByRole("dialog").getByRole("checkbox", { name: "Keyboard shortcuts" }),
+    ).not.toBeChecked();
+  });
+});
+
+test.describe("the rail's focus ring shows whole inside the scrolling rail, wide layout (PD-A11Y-SWEEP-9)", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+  test.skip(
+    ({ browserName }) => browserName === "webkit",
+    "WebKit's Tab skips buttons, so it never walks the rail",
+  );
+
+  test("each rail control's ring is drawn outside it, as elsewhere, and the rail cuts no side", async ({
+    page,
+  }) => {
+    await report.gotoReport2WithHash("baselined-wallabag-2.6", "view=findings");
+    const rail = page.locator(".shell-rail");
+    const controls = await rail.locator("button, summary, a[href]").count();
+    expect(controls).toBeGreaterThan(5);
+    await rail.locator("button").first().focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+
+    const rings: { name: string; visible: boolean; offset: number; cut: string[] }[] = [];
+    for (let step = 0; step < controls; step += 1) {
+      rings.push(
+        await page.evaluate(() => {
+          const el = document.activeElement as HTMLElement;
+          // Firefox's focus scroll can leave a control partly out of the rail: measure it in view.
+          el.scrollIntoView({ block: "nearest" });
+          const box = el.closest(".shell-rail") ?? document.documentElement;
+          const style = getComputedStyle(el);
+          const offset = parseFloat(style.outlineOffset);
+          const reach = offset + parseFloat(style.outlineWidth);
+          const ring = el.getBoundingClientRect();
+          const frame = box.getBoundingClientRect();
+          const left = frame.left + box.clientLeft;
+          const top = frame.top + box.clientTop;
+          const sides = {
+            left: left - (ring.left - reach),
+            right: ring.right + reach - (left + box.clientWidth),
+            top: top - (ring.top - reach),
+            bottom: ring.bottom + reach - (top + box.clientHeight),
+          };
+          return {
+            name: el.textContent.trim().slice(0, 24),
+            visible: el.matches(".shell-rail :focus-visible"),
+            offset,
+            cut: Object.entries(sides)
+              .filter(([, px]) => px > 0.5)
+              .map(([side, px]) => `${side} ${px}`),
+          };
+        }),
+      );
+      await page.keyboard.press("Tab");
+    }
+
+    expect(rings.filter(({ visible }) => !visible)).toEqual([]);
+    expect(rings.filter(({ offset }) => offset <= 0)).toEqual([]);
+    expect(rings.filter(({ cut }) => cut.length > 0)).toEqual([]);
   });
 });

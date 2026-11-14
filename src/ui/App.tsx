@@ -2,29 +2,40 @@ import "../styles/tokens.css";
 import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
+import { activeFilters } from "../domain/filters";
 import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
+import { pageTitle, projectName } from "../domain/pageTitle";
+import { openedBesideList, skipLinkLabel } from "../domain/pageVocabulary";
+import { shownExposure } from "../domain/radius2";
+import { PHP_WINDOW_SECTION } from "../domain/runState";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
 import { Detail2 } from "./report/Detail";
 import { FindingsStrip } from "./report/FindingsView";
+import { SCORE_SECTION_ID } from "./report/ScoreModelLink";
 import { Footer } from "./Footer";
-import { Glossary } from "./Glossary";
+import { Glossary, type GlossaryAt } from "./Glossary";
 import { Header } from "./Header";
 import { decideKey, findRow, keyInputFrom, prevents, rowAt, rowPosition, type KeyDecision } from "./keyboard";
+import { sideStep, type SideStep } from "./sideKeys";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
 import { anchorShift, measureRow, roomBelow, type RowAnchor } from "./rowAnchor";
 import { usePrintDocument } from "./print/usePrintDocument";
 import { pickCursor } from "./rowCursor";
 import { SearchBar } from "./search/SearchBar";
-import { tabId, Tabs } from "./Tabs";
+import { TABS, tabId, Tabs } from "./Tabs";
 import { useHashState } from "./useHashState";
+import { useShell } from "./useShell";
+import { useShortcutsSwitch } from "./useShortcutsSwitch";
 import { useTheme } from "./useTheme";
-import { useNarrow, useWide } from "./useWide";
+import { useNarrow, useRailRoom, useWide } from "./useWide";
 import { CurrentView } from "./views/Views";
 import "./app.css";
 import "../styles/print.css";
+
+const RUN_SECTIONS: readonly string[] = [PHP_WINDOW_SECTION, SCORE_SECTION_ID];
 
 /** Where focus goes once the page re-renders: the row `j`/`k` just walked to, or the one Close or
  *  Escape just closed — by name and position, since a package can have two rows — or the search box
@@ -90,10 +101,9 @@ interface ShortcutDeps {
   dispatch: (action: Action) => void;
   search: RefObject<HTMLInputElement>;
   glossaryOpen: boolean;
-  /** Opens with no term to highlight — the "?" shortcut, unlike a verdict pill's "In the glossary",
-   *  never names one (PD-GLOSSARY-7, DESIGN.md §5). Also clears whatever term a previous open left
-   *  behind, the same reset `Header`'s own glossary button already gets through this callback. */
-  openGlossary: () => void;
+  /** The "?" key's open, with no term to highlight (PD-GLOSSARY-7): the "Keys and search" section
+   *  unfolded and in view, where the search box's hint points. */
+  openGlossaryKeys: () => void;
   setGlossaryOpen: (open: boolean) => void;
   focusRequest: { current: FocusRequest };
   lastRow: { current: RowSpot | null };
@@ -103,11 +113,12 @@ interface ShortcutDeps {
   cursor: string | null;
   /** Phone widths, where Blast radius starts its one-each rows folded. */
   narrow: boolean;
+  shortcutsOn: boolean;
 }
 
 /** Carries out what keyboard.ts decided. */
 function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
-  const { dispatch, search, openGlossary, setGlossaryOpen, focusRequest, lastRow } = deps;
+  const { dispatch, search, openGlossaryKeys, setGlossaryOpen, focusRequest, lastRow } = deps;
   switch (decision.type) {
     case "openRow":
       dispatch({ type: "select", pkg: decision.pkg });
@@ -119,6 +130,14 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
       focusRequest.current = { kind: "row", pkg: decision.pkg, index: decision.index };
       dispatch({ type: "select", pkg: decision.pkg });
       break;
+    case "focusRow": {
+      const row = rowAt(document, decision.pkg, decision.index);
+      if (row !== null) {
+        focusRow(row);
+        lastRow.current = { pkg: decision.pkg, index: decision.index };
+      }
+      break;
+    }
     case "closeDetail":
       // Null when Escape was typed in the search box: the detail closes, the caret stays.
       focusRequest.current =
@@ -138,7 +157,7 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
       leaveSearch(deps);
       break;
     case "openGlossary":
-      openGlossary();
+      openGlossaryKeys();
       break;
     case "closeGlossary":
       setGlossaryOpen(false);
@@ -197,6 +216,41 @@ function useRowAnchor(
   return [anchored, keepInPlace];
 }
 
+/** Laid out, and wholly between the sticky header and the viewport's bottom edge. */
+function inFullView(row: HTMLElement): boolean {
+  const box = row.getBoundingClientRect();
+  const header = document.querySelector(".topbar")?.getBoundingClientRect().bottom ?? 0;
+  return box.height > 0 && box.top >= header && box.bottom <= window.innerHeight;
+}
+
+/** A cell takes focus only while the arrow keys hold it there, so a click on a row still focuses the row.
+ *  A cell that lays its parts out in the row's grid (`display: contents`) cannot hold focus, so its
+ *  first part takes it. */
+function applySide(step: SideStep): void {
+  if ("toggle" in step) step.toggle.click();
+  if (!("focus" in step)) return;
+  holdFocus(step.focus);
+  const part = step.focus.firstElementChild;
+  if (document.activeElement !== step.focus && part instanceof HTMLElement) holdFocus(part);
+}
+
+function holdFocus(target: HTMLElement): void {
+  const added = !target.hasAttribute("tabindex");
+  if (added) target.tabIndex = -1;
+  focusRow(target);
+  if (!added) return;
+  if (document.activeElement !== target) {
+    target.removeAttribute("tabindex");
+    return;
+  }
+  // A window switch blurs the cell and leaves it focused; only a real move of focus ends the hold.
+  const release = () => {
+    if (document.activeElement === target) target.addEventListener("blur", release, { once: true });
+    else target.removeAttribute("tabindex");
+  };
+  target.addEventListener("blur", release, { once: true });
+}
+
 /** One document keydown listener that reads the latest page state through a ref. A layout effect,
  *  so a key pressed as soon as the page has loaded already reaches it. */
 function useShortcuts(deps: ShortcutDeps) {
@@ -205,6 +259,15 @@ function useShortcuts(deps: ShortcutDeps) {
 
   useLayoutEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      const modified = event.ctrlKey || event.metaKey || event.altKey || event.shiftKey;
+      const step = modified
+        ? null
+        : sideStep(event.key, event.target instanceof Element ? event.target : null);
+      if (step !== null) {
+        event.preventDefault();
+        applySide(step);
+        return;
+      }
       const current = latest.current;
       const { model, state } = current;
       const decision = decideKey(
@@ -215,6 +278,7 @@ function useShortcuts(deps: ShortcutDeps) {
           rendered: () => renderedPackages2(model.report, state, state.view, current.narrow),
           sheetOpen: current.sheet,
           overview: state.view === "overview",
+          shortcutsOn: current.shortcutsOn,
         }),
       );
       if (prevents(decision)) event.preventDefault();
@@ -228,27 +292,18 @@ function useShortcuts(deps: ShortcutDeps) {
   }, []);
 }
 
-/** The rail beside the list, or on phone widths a "Filters" disclosure above it. */
-function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
+/** The rail beside the list, or a "Filters" disclosure above it: on narrow screens, and while an open
+ *  package takes the width beside the list. */
+function RailSlot({ folded, inert }: { folded: boolean; inert: boolean }) {
   const { state } = useReport();
-  if (!narrow) {
+  if (!folded) {
     return (
       <div className="shell-rail" inert={inert}>
         <Rail />
       </div>
     );
   }
-  const { verdict, scope, signal, sev, fix, since, gate, flag, accepted } = state.filters;
-  const on =
-    verdict.length +
-    scope.length +
-    signal.length +
-    sev.length +
-    fix.length +
-    since.length +
-    gate.length +
-    flag.length +
-    accepted.length;
+  const on = activeFilters(state.filters).length;
 
   return (
     <details className="rail-fold" inert={inert}>
@@ -258,10 +313,12 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
   );
 }
 
-/** The page: state, address bar, layout, theme, keyboard (DESIGN.md §4, §5, §8). */
-export function App({ model }: { model: Model }) {
+/** The page: state, address bar, layout, theme, keyboard (DESIGN.md §4, §5, §8). `title` is the
+ *  document's written title when the page owns the document; without it the title is left alone. */
+export function App({ model, title }: { model: Model; title?: string | undefined }) {
   const wide = useWide();
   const narrow = useNarrow();
+  const railRoom = useRailRoom();
   const fit = useCallback(
     (next: State): State => {
       const filters = fitFilters2(model.report, next.filters);
@@ -276,6 +333,7 @@ export function App({ model }: { model: Model }) {
   // Set by every package a reader opens (click, Enter, `j`/`k`), never by the boot address or a
   // `hashchange`: only a reader's own open moves focus into a sheet (PD-ROWS-12).
   const openedByReader = useRef(false);
+  const [openNote, setOpenNote] = useState("");
   const dispatch = useCallback(
     (action: Action) => {
       if (action.type === "select" && action.pkg !== null) openedByReader.current = true;
@@ -285,8 +343,16 @@ export function App({ model }: { model: Model }) {
     [anchoredDispatch],
   );
   const theme = useTheme();
+  const [shell, pickShell] = useShell();
+  const [shortcutsOn, setShortcutsOn] = useShortcutsSwitch();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [glossaryAt, setGlossaryAt] = useState<GlossaryAt>("top");
   const openGlossary = useCallback(() => {
+    setGlossaryAt("top");
+    setGlossaryOpen(true);
+  }, []);
+  const openGlossaryKeys = useCallback(() => {
+    setGlossaryAt("keys");
     setGlossaryOpen(true);
   }, []);
   const search = useRef<HTMLInputElement>(null);
@@ -300,7 +366,7 @@ export function App({ model }: { model: Model }) {
   // summary, rail, list and footer are all under it, and `inert` while it is.
   const sheet = state.pkg !== null && !wide;
 
-  // The list's one Tab stop (PD-ROWS-11): the open package's row, else the one last opened — the
+  // The list's Tab stop (PD-ROWS-11, one per tree on Blast radius): the open package's row, else the one last opened — the
   // row Escape or Close just handed focus to — else the first. Written in the render body, like
   // `currentView` below: every change to it comes with a state change that renders anyway.
   const lastOpened = useRef<string | null>(state.pkg);
@@ -317,37 +383,30 @@ export function App({ model }: { model: Model }) {
     dispatch,
     search,
     glossaryOpen,
-    openGlossary,
+    openGlossaryKeys,
     setGlossaryOpen,
     focusRequest,
     lastRow,
     sheet,
     cursor,
     narrow,
+    shortcutsOn,
   });
 
-  // A tab switch a reader clicked (or the quiet note's "See the advisories") used to leave the
-  // page's scroll wherever it was on the tab just left — a Findings list scrolled down to
-  // "hoa/compiler" handed the next tab's much shorter content the same scroll offset, landing mid
-  // list with no sign why. `dispatchTracked` marks every `"view"` action this ref sees; the effect
-  // below fires only for those, never for the boot state or a `hashchange` restore (`useHashState`
-  // reaches the reducer directly for both, through `restore`/the lazy initial state, and never
-  // dispatches `"view"` at all), so a pasted link that restores a tab does not fight a reader's own
-  // scroll position.
+  // Only a tab switch the reader dispatched scrolls to the top: the boot state and a `hashchange`
+  // restore reach the reducer without a "view" action, so a pasted link keeps its scroll.
   const tabChangedByReader = useRef(false);
-  // Tabs.tsx dispatches "view" even for the tab already selected (on purpose: it closes the open
-  // detail), so the flag above must only latch when the view actually moves — comparing against a
-  // ref, not `state.view` itself, keeps `dispatchTracked`'s identity tied to `dispatch` alone rather
-  // than recreating it on every state change. Written directly in the render body: it is always
-  // current before an event handler can fire, no effect needed. Missing this comparison left the
-  // flag set after a same-tab click, so the *next* view change for any reason — including a
-  // hashchange restore — scrolled to 0 regardless of who caused it (regression review).
+  // Tabs.tsx dispatches "view" for the open tab too, so the flag latches only when the view moves.
   const currentView = useRef(state.view);
   currentView.current = state.view;
   const listFocused = useRef(false);
+  const focusedAtSwitch = useRef<Element | null>(null);
   const dispatchTracked = useCallback(
     (action: Action) => {
-      if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
+      if (action.type === "view" && action.view !== currentView.current) {
+        tabChangedByReader.current = true;
+        focusedAtSwitch.current = document.activeElement;
+      }
       if (action.type === "focus") listFocused.current = true;
       dispatch(action);
     },
@@ -361,6 +420,7 @@ export function App({ model }: { model: Model }) {
   useEffect(() => {
     if (!listFocused.current) return;
     listFocused.current = false;
+    if (state.section !== null) return;
     const panel = document.getElementById(`${idBase}-panel`);
     if (typeof panel?.scrollIntoView === "function") panel.scrollIntoView({ block: "start" });
     const active = document.activeElement;
@@ -378,7 +438,23 @@ export function App({ model }: { model: Model }) {
     // all; scrolling the window itself back to 0 is what puts the tab row and the new tab's own
     // first row directly under it, on every width.
     window.scrollTo(0, 0);
+    // A focused control that switched the tab left the page with the old tab: focus goes to the panel.
+    const switcher = focusedAtSwitch.current;
+    focusedAtSwitch.current = null;
+    const landed = document.activeElement;
+    if (switcher !== null && !switcher.isConnected && (landed === null || landed === document.body))
+      document.getElementById(`${idBase}-panel`)?.focus({ preventScroll: true });
   }, [state.view]);
+
+  // The `section` key opens Run data at that section, from a link, a pasted address or a
+  // `hashchange` (SPEC §7.9.16). Any other value, or a section the run lacks, does nothing.
+  useEffect(() => {
+    if (state.view !== "run" || state.section === null || !RUN_SECTIONS.includes(state.section)) return;
+    const heading = document.getElementById(state.section)?.querySelector<HTMLElement>("h3");
+    if (heading == null) return;
+    if (typeof heading.scrollIntoView === "function") heading.scrollIntoView({ block: "start" });
+    heading.focus({ preventScroll: true });
+  }, [state.view, state.section]);
 
   // A layout effect, so the row is focused in the same task as the render that follows the key or
   // click. A plain effect waits for the next frame, and a reader (or a test) who moves focus in
@@ -390,9 +466,10 @@ export function App({ model }: { model: Model }) {
     focusRequest.current = null;
     const opened = openedByReader.current;
     openedByReader.current = false;
-    // A clicked row holds focus: remember which of its package's rows it was.
-    const active = document.activeElement;
-    if (active instanceof HTMLElement && state.pkg !== null && active.getAttribute("data-pkg") === state.pkg)
+    setOpenNote(opened && !sheet && state.pkg !== null ? openedBesideList(state.pkg) : "");
+    // A clicked row, or a cell of it, holds focus: remember which of its package's rows it was.
+    const active = document.activeElement?.closest<HTMLElement>("[data-pkg]") ?? null;
+    if (active !== null && state.pkg !== null && active.getAttribute("data-pkg") === state.pkg)
       lastRow.current = { pkg: state.pkg, index: rowPosition(document, active) };
 
     if (request?.kind === "search") {
@@ -413,13 +490,14 @@ export function App({ model }: { model: Model }) {
     if (row !== null) focusRow(row);
   }, [state, sheet]);
 
-  // A `#pkg=` link opens its package on load (PD-ROWS-9) — and now also brings its row into view:
-  // the page used to open at the top with the open package's row thousands of pixels down, so Close
-  // sent focus to a row off screen (PD-ROWS-10). Boot only: a link pasted into an open page leaves
-  // the reader's scroll alone, as a restored tab does.
+  // A `#pkg=` link opens its package on load (PD-ROWS-9) and brings its row into view, so Close hands
+  // focus to a row on screen (PD-ROWS-10). A row already in full view under the header stays put, so
+  // the strip above the list stays clear of the sticky header. Boot only: a link pasted into an open
+  // page leaves the reader's scroll alone, as a restored tab does.
   useLayoutEffect(() => {
     const row = state.pkg === null ? null : findRow(document, state.pkg);
-    if (typeof row?.scrollIntoView === "function") row.scrollIntoView({ block: "center" });
+    if (typeof row?.scrollIntoView !== "function" || inFullView(row)) return;
+    row.scrollIntoView({ block: "center" });
   }, []); // once, for the address the page booted with
 
   // Scroll is locked only while a sheet actually covers the page (DESIGN.md §5 M13).
@@ -442,22 +520,29 @@ export function App({ model }: { model: Model }) {
     detailScrollRef.current?.scrollTo(0, 0);
   }, [state.pkg]);
 
+  useEffect(() => {
+    if (title === undefined) return undefined;
+    const tab = TABS.find(({ view }) => view === state.view)?.label ?? state.view;
+    const held = model.report.findings.some(({ package: name }) => name === state.pkg);
+    document.title = pageTitle(title, tab, projectName(model.report.run), held ? state.pkg : null);
+    return () => {
+      document.title = title;
+    };
+  }, [title, model, state.view, state.pkg]);
+
   const now = useMemo(() => new Date(model.report.generated_at), [model]);
   const value = useMemo(
-    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary }),
-    [model, state, dispatchTracked, now, wide, cursor, openGlossary],
+    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary, shell, pickShell }),
+    [model, state, dispatchTracked, now, wide, cursor, openGlossary, shell, pickShell],
   );
   // The printed report (print/PrintDocument.tsx): mounted into `printHost` only while the page prints.
   const printHost = useRef<HTMLDivElement>(null);
   usePrintDocument(printHost, value);
   const filterable = population2(model.report, state.view).length > 0;
   const panelId = `${idBase}-panel`;
-  // The detail's own grid column (`.shell`, ui/app.css) is static CSS and can't see that
-  // `.shell-detail` below is unmounted while `state.pkg` is null — left alone, the wide layout kept
-  // reserving that column's width with nothing in it, so the list column never grew to fill the
-  // space a closed panel had freed (a walk found this on All packages and Blast radius at 1440).
   const detailOpen = state.pkg !== null;
-  const shellClass = ["shell", !filterable && "no-rail", !detailOpen && "no-detail"]
+  const railFolded = narrow || !railRoom || (detailOpen && wide);
+  const shellClass = ["shell", filterable && !railFolded && "has-rail", detailOpen && wide && "has-detail"]
     .filter(Boolean)
     .join(" ");
 
@@ -465,6 +550,21 @@ export function App({ model }: { model: Model }) {
   // was the one part of the page a screen reader's landmark list could not reach (axe `region`).
   return (
     <ReportContext.Provider value={value}>
+      {/* A link to the hash would route the page, so the skip moves focus itself: to the list's
+          Tab stop row, the cursor's when Blast radius has two trees, else to the panel. */}
+      <a
+        className="skip-link"
+        href={`#${panelId}`}
+        inert={sheet}
+        onClick={(event) => {
+          event.preventDefault();
+          const panel = document.getElementById(panelId);
+          const stops = [...(panel?.querySelectorAll<HTMLElement>('[data-pkg][tabindex="0"]') ?? [])];
+          (stops.find((stop) => stop.dataset.pkg === cursor) ?? stops[0] ?? panel)?.focus();
+        }}
+      >
+        {skipLinkLabel(state.view === "radius" ? shownExposure(model.report).length > 0 : filterable)}
+      </a>
       <NewerSchemaBanner inert={sheet} />
       <Header
         theme={theme.effective}
@@ -483,7 +583,7 @@ export function App({ model }: { model: Model }) {
           </div>
         )}
         <div className={shellClass}>
-          {filterable && <RailSlot narrow={narrow} inert={sheet} />}
+          {filterable && !railFolded && <RailSlot folded={false} inert={sheet} />}
           <div
             className="shell-main"
             id={panelId}
@@ -492,9 +592,10 @@ export function App({ model }: { model: Model }) {
             tabIndex={-1}
             inert={sheet}
           >
+            {filterable && railFolded && <RailSlot folded inert={sheet} />}
             {/* SearchBar hides its own box and hint when the tab has nothing to filter, and keeps the
                 count line, which a clean report still shows. Overview lists nothing to count. */}
-            {state.view !== "overview" && <SearchBar inputRef={search} />}
+            {state.view !== "overview" && <SearchBar inputRef={search} shortcutsOn={shortcutsOn} />}
             <CurrentView />
           </div>
           {state.pkg !== null && (
@@ -503,10 +604,16 @@ export function App({ model }: { model: Model }) {
             </div>
           )}
         </div>
+        <span className="open-note vh" aria-live="polite">
+          {openNote}
+        </span>
       </main>
       <Footer inert={sheet} />
       <Glossary
         open={glossaryOpen}
+        at={glossaryAt}
+        shortcutsOn={shortcutsOn}
+        onShortcutsChange={setShortcutsOn}
         onClose={() => {
           setGlossaryOpen(false);
         }}

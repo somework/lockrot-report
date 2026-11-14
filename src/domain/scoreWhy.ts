@@ -11,6 +11,7 @@ import type {
 } from "../model/report";
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report";
 import { day, pluralNoun } from "./format";
+import { AGES_AS_OF } from "./share";
 import { vocabTable } from "./vocab";
 import { advisoryRows } from "./advisoryRows";
 import {
@@ -72,7 +73,7 @@ function abandonedMarkingLines(finding: Finding): string[] {
 }
 
 function header(finding: Finding, score: ScoreGraded | null, report: WhyReport): string {
-  const asOf = ` · ages as of ${day(report.generated_at)}`;
+  const asOf = ` · ${AGES_AS_OF} ${day(report.generated_at)}`;
   if (!score) return `0 · ${finding.verdict}${asOf}`;
   const { floor, next, to_next: toNext } = score.band;
   const short =
@@ -104,7 +105,7 @@ function securityTermLine(finding: Finding, score: ScoreGraded, term: TermSecuri
     line += "; its fix is unknown: no × 2";
   } else if (!doubles) {
     const branch = advisoryRows(finding).find((row) => row.id === term.advisory)?.fix.to_branch ?? null;
-    line += `; its own fix (${fixLabel(term.fix_kind)}${branch ? ` on ${branch}` : ""}) is reachable: no × 2`;
+    line += `; its own fix (${fixLabel(term.fix_kind)}${branch ? ` on ${branch}` : ""}) is reachable, so no × 2`;
   }
   return line;
 }
@@ -185,31 +186,6 @@ function withoutRow(finding: Finding, score: ScoreGraded, row: WithoutRow): stri
   return text;
 }
 
-function afterMoveLines(finding: Finding, score: ScoreGraded): string[] {
-  const move = finding.next_step;
-  const applied = move?.if_applied;
-  if (!move || !applied) return [];
-  const counted = new Set<string>(score.terms.map((t) => t.flag));
-  const noNewAdvisories = applied.assumes.includes("no_new_advisories");
-  const conditions = [
-    ...(move.adds.length > 0 ? [`adds ${move.adds.map((a) => a.id).join(" and ")}`] : []),
-    ...move.unverified
-      .filter((u) => u.kind === "flag" && !counted.has(u.id))
-      .map((u) => `${u.id} not checked`),
-    ...(applied.assumes.includes("composer_resolves") ? ["if Composer resolves it"] : []),
-    ...(noNewAdvisories ? ["advisories on its new versions not checked"] : []),
-  ];
-  const bound = applied.at_most
-    ? noNewAdvisories
-      ? "at most, from the facts it checked, "
-      : "at most "
-    : "";
-  return [
-    `after the move: ${bound}${applied.total}, ${applied.verdict}` +
-      (conditions.length > 0 ? ` (${conditions.join("; ")})` : ""),
-  ];
-}
-
 function partialLines(finding: Finding): string[] {
   const partial = isSecurityVulnerable(finding.security) ? finding.security.partial : null;
   if (!partial) return [];
@@ -234,7 +210,6 @@ export type WhyLineKind =
   | "not-judged"
   | "opening"
   | "counterfactuals"
-  | "after-the-move"
   | "partial"
   | "checks-missing"
   | "checks-skipped"
@@ -266,7 +241,6 @@ function gradedLines(finding: Finding, score: ScoreGraded, report: WhyReport): W
     ...tagged("not-judged", notJudged ? [notJudgedLine(finding)] : []),
     ...tagged("opening", [openingLine(finding, score, run)]),
     ...tagged("counterfactuals", counterfactuals.length > 0 ? [counterfactuals.join(" · ")] : []),
-    ...tagged("after-the-move", afterMoveLines(finding, score)),
     ...tagged("partial", partialLines(finding)),
     ...tagged("checks-missing", checksMissingLines(finding, run)),
     ...tagged("checks-skipped", checksSkippedLines(finding, { metadataSaid: notJudged })),

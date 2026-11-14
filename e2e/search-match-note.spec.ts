@@ -21,6 +21,7 @@ test.describe("report-2: free text finds what the row shows", () => {
       "friendsofsymfony/oauth-server-bundle",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
     ]);
     await expect(page.locator('[data-surface="findings"] .match-note')).toHaveCount(0);
     await expect(page.locator(".match-split")).toHaveCount(0);

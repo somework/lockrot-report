@@ -1,61 +1,24 @@
 import type { ComponentChildren, RefObject } from "preact";
-import { useId, useLayoutEffect, useRef } from "preact/hooks";
-import { day } from "../domain/format";
+import { useId, useLayoutEffect } from "preact/hooks";
 import { gateFact, gateHeadline } from "../domain/gate";
+import { projectName } from "../domain/pageTitle";
+import { day } from "../domain/format";
+import { AGES_AS_OF, DATA_AND_AGES_AS_OF, dataDay } from "../domain/share";
+import { newTab } from "../domain/rich";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
+import { useMeasuredHeight } from "./useMeasuredHeight";
 import { themeButtonLabel, type Theme } from "./useTheme";
 
-/**
- * Publishes the header's rendered height as `--topbar-h`, which the sticky rail and detail column
- * sit under. The legacy page hard-coded 196px (css-html.md §10.4), and a long project name or a
- * wrapped meta line pushed the real header past it. Set through the CSSOM, which the page's CSP
- * allows (DESIGN.md §1.3).
- */
-function useHeaderHeight() {
-  const ref = useRef<HTMLElement>(null);
-
-  useLayoutEffect(() => {
-    const node = ref.current;
-    if (node === null || typeof ResizeObserver === "undefined") return undefined;
-    const root = document.documentElement;
-    const observer = new ResizeObserver(() => {
-      root.style.setProperty("--topbar-h", `${Math.ceil(node.getBoundingClientRect().height)}px`);
-    });
-    observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-      root.style.removeProperty("--topbar-h");
-    };
-  }, []);
-
-  return ref;
-}
-
-/** True when every fact and button of the line sits on one row. */
-function oneRow(meta: Element): boolean {
-  const boxes = [...meta.children].map((el) => el.getBoundingClientRect()).filter((box) => box.width > 0);
-  const first = boxes[0];
-  if (first === undefined) return true;
-  const mid = (box: DOMRect) => box.top + box.height / 2;
-  return boxes.every((box) => Math.abs(mid(box) - mid(first)) < first.height / 2);
-}
-
-/** Hides the gate fact's flags from sight where the summary names them anyway and that saves a line,
- *  or where it brings the page's buttons back onto the facts' row, the summary then saying them too
- *  (gate.css). A phone wraps the buttons either way. */
+/** Hides the gate fact's flags from sight only where the summary names them anyway and that saves a
+ *  line (gate.css). The flags are the gate's source, so a gate that fails keeps them in the header. */
 function fitGateFact(node: HTMLElement): void {
   delete node.dataset["fact"];
-  const meta = node.querySelector(".run-meta");
-  if (meta === null || node.querySelector(".gate-fact-more") === null) return;
-  const said = node.querySelector(".gate-fact[data-said]") !== null;
+  if (node.querySelector(".gate-fact[data-said] .gate-fact-more") === null) return;
   const full = node.getBoundingClientRect().height;
-  if (!said && oneRow(meta)) return;
   node.dataset["fact"] = "short";
-  const kept = said ? node.getBoundingClientRect().height < full : oneRow(meta);
-  if (!kept) delete node.dataset["fact"];
+  if (node.getBoundingClientRect().height >= full) delete node.dataset["fact"];
 }
 
 function useGateFactFit(ref: RefObject<HTMLElement>) {
@@ -86,17 +49,36 @@ export interface HeaderProps {
   inert?: boolean;
 }
 
-/**
- * The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
- * page-wide controls (legacy report.html:26-42).
- */
+function HeaderDates({ dataDate, generatedAt }: { dataDate: string | null; generatedAt: string }) {
+  const ages = <b className="mono">{day(generatedAt)}</b>;
+  if (dataDate === null)
+    return (
+      <span>
+        {AGES_AS_OF} {ages}
+      </span>
+    );
+  if (dataDay(dataDate) === day(generatedAt))
+    return (
+      <span title={`${DATA_AND_AGES_AS_OF} ${day(generatedAt)}`}>
+        <span className="vh">data and ages </span>as of {ages}
+      </span>
+    );
+  return (
+    <span>
+      data <b className="mono">{dataDay(dataDate)}</b> · ages {ages}
+    </span>
+  );
+}
+
+/** The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
+ *  page-wide controls. */
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
-  const { run, lockrot, generated_at } = model.report;
-  const ref = useHeaderHeight();
+  const { run, lockrot, data_date, generated_at } = model.report;
+  const ref = useMeasuredHeight<HTMLElement>("--topbar-h");
   useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
-  const project = run.project ?? run.lock_file ?? "composer.lock";
+  const project = projectName(run);
   const label = themeButtonLabel(theme);
   const decided = gateHeadline(model.report);
   const gate = gateFact(model.report);
@@ -107,20 +89,25 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
       <div className="topbar-in">
         <div className="brand">
           <span className="dot" aria-hidden="true" />
-          <h1>
-            <a href="https://lockrot.dev/" target="_blank" rel="noopener noreferrer">
-              lockrot
-            </a>
+          <a
+            className="brand-name"
+            href="https://lockrot.dev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={newTab("lockrot")}
+          >
+            lockrot
+          </a>
+          {/* The label keeps the name out of the eyebrow's CSS capitals, which Chromium reads out. */}
+          <h1 className="eyebrow project" aria-label={project}>
+            {project}
           </h1>
-          <span className="eyebrow project">{project}</span>
         </div>
         <div className="run-meta">
           <span>
             target PHP <b className="mono">{run.target_php}</b>
           </span>
-          <span>
-            data as of <b className="mono">{day(generated_at)}</b>
-          </span>
+          <HeaderDates dataDate={data_date} generatedAt={generated_at} />
           <span>
             lockrot <b className="mono">{lockrot.version}</b>
           </span>

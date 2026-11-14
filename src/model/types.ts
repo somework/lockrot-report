@@ -5,7 +5,7 @@
 
 import type { Report2Embed } from "./report";
 
-export const SIGNAL_IDS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"] as const;
+export const SIGNAL_IDS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"] as const;
 export type KnownSignalId = (typeof SIGNAL_IDS)[number];
 export type SignalId = KnownSignalId | (string & {});
 

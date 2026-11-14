@@ -137,6 +137,7 @@ describe("fixed", () => {
 describe("countPhrase", () => {
   test("singularises the noun for exactly one, matching DESIGN.md M21's fix", () => {
     expect(countPhrase(1, 1, "flagged package", "flagged packages")).toBe("1 of 1 flagged package");
+    expect(countPhrase(1, 113, "flagged package", "flagged packages")).toBe("1 of 113 flagged packages");
     expect(countPhrase(3, 7, "flagged package", "flagged packages")).toBe("3 of 7 flagged packages");
   });
 
@@ -209,36 +210,54 @@ describe("ageOld", () => {
   });
 });
 
-describe("decimal: the correctly rounded decimal of the double, a tie to even", () => {
+describe("decimal: the published value rounded half up, as PHP's number_format prints it", () => {
   test.each([
-    [2.25, 1, "2.2"],
+    [2.25, 1, "2.3"],
     [2.35, 1, "2.4"],
     [2.75, 1, "2.8"],
-    [0.125, 2, "0.12"],
+    [1.45, 1, "1.5"],
+    [0.15, 1, "0.2"],
+    [2.65, 1, "2.7"],
+    [6.85, 1, "6.9"],
+    [4.05, 1, "4.1"],
+    [0.125, 2, "0.13"],
     [0.375, 2, "0.38"],
-    [0.5, 0, "0"],
+    [1.005, 2, "1.01"],
+    [2.675, 2, "2.68"],
+    [0.5, 0, "1"],
     [1.5, 0, "2"],
-    [2.5, 0, "2"],
-    [-2.25, 1, "-2.2"],
+    [2.5, 0, "3"],
+    [9.95, 1, "10.0"],
+    [99.995, 2, "100.00"],
+    [-2.25, 1, "-2.3"],
     [17.85, 2, "17.85"],
-    [406.585, 2, "406.58"],
+    [406.585, 2, "406.59"],
     [0, 2, "0.00"],
     [97.8, 1, "97.8"],
+    [12, 1, "12.0"],
+    [1.44, 1, "1.4"],
+    [1.4499, 1, "1.4"],
   ])("%d to %d decimals is %s", (value, digits, text) => {
     expect(decimal(value, digits)).toBe(text);
   });
 
-  test("rounds a written tie that no double holds by the stored value", () => {
-    // 1.005 is stored as 1.00499999999999989…, 0.45 as 0.45000000000000001…
-    expect(decimal(1.005, 2)).toBe("1.00");
-    expect(decimal(2.675, 2)).toBe("2.67");
-    expect(decimal(0.15, 1)).toBe("0.1");
-    expect(decimal(1.45, 1)).toBe("1.4");
-    expect(decimal(0.45, 1)).toBe("0.5");
+  test("reads a value that prints in exponent form", () => {
+    expect(decimal(1e-7, 2)).toBe("0.00");
+    expect(decimal(5e-7, 6)).toBe("0.000001");
+    expect(decimal(1e21, 1)).toBe("1000000000000000000000.0");
+  });
+
+  test("drops the sign of a value that rounds to zero, as number_format does", () => {
+    expect(decimal(-0.04, 1)).toBe("0.0");
+    expect(decimal(-0.05, 1)).toBe("-0.1");
+  });
+
+  test("prints a value that is not finite as JavaScript writes it", () => {
+    expect(decimal(Number.POSITIVE_INFINITY, 1)).toBe("Infinity");
   });
 
   test("lets fixed keep its null for a value that is not a finite number", () => {
-    expect(fixed(2.25, 1)).toBe("2.2");
+    expect(fixed(2.25, 1)).toBe("2.3");
     expect(fixed(Number.NaN, 1)).toBeNull();
   });
 });

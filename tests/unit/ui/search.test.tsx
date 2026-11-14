@@ -9,6 +9,7 @@ import type { Model } from "../../../src/model/types";
 import { normalize } from "../../../src/model/normalize";
 import { ReportContext } from "../../../src/ui/context";
 import { SearchBar } from "../../../src/ui/search/SearchBar";
+import { pageGoldens } from "../words/recorded";
 
 /** The page on its Findings tab, with nothing filtered. */
 const FINDINGS: State = { ...INITIAL_STATE, view: "findings" };
@@ -44,6 +45,8 @@ function renderIn(
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
+        shell: "posix",
+        pickShell: vi.fn(),
       }}
     >
       {ui}
@@ -52,7 +55,7 @@ function renderIn(
 }
 
 function renderBar(model: Model, state: State, dispatch?: (action: Action) => void) {
-  return renderIn(<SearchBar inputRef={createRef<HTMLInputElement>()} />, model, state, dispatch);
+  return renderIn(<SearchBar inputRef={createRef<HTMLInputElement>()} shortcutsOn />, model, state, dispatch);
 }
 
 function countLine(): string {
@@ -67,6 +70,13 @@ describe("SearchBar", () => {
     const placeholder = input.getAttribute("placeholder") ?? "";
     expect(placeholder).toContain("flag:");
     expect(placeholder).toContain("score:");
+  });
+
+  it("gives the Advisories tab a neutral placeholder, because a flag or score example can match none of its rows", () => {
+    renderBar(composite(), { ...INITIAL_STATE, view: "advisories" });
+
+    const placeholder = screen.getByRole("searchbox").getAttribute("placeholder") ?? "";
+    expect(placeholder).toBe("a package name");
   });
 
   it("dispatches a query action as the reader types", () => {
@@ -105,7 +115,7 @@ describe("SearchBar", () => {
   it("counts the Findings tab against the graded findings", () => {
     renderBar(composite(), FINDINGS);
 
-    expect(countLine()).toBe("7 of 7 flagged packages");
+    expect(countLine()).toBe("9 of 9 flagged packages");
   });
 
   it("singularises the noun at one", () => {
@@ -119,8 +129,8 @@ describe("SearchBar", () => {
 
     renderBar(composite(), state);
 
-    // `counts.critical` of the document is 3.
-    expect(countLine()).toContain("3 of 7 flagged packages");
+    // `counts.critical` of the document is 4.
+    expect(countLine()).toContain("4 of 9 flagged packages");
     expect(countLine()).toContain("1 filter on");
   });
 
@@ -129,21 +139,31 @@ describe("SearchBar", () => {
 
     renderBar(composite(), state);
 
-    expect(countLine()).toBe("7 of 7 packages");
+    expect(countLine()).toBe("9 of 9 packages");
   });
 
   it("counts the Advisories tab in advisories, against the document's counted total", () => {
     renderBar(composite(), { ...FINDINGS, view: "advisories" });
 
-    expect(countLine()).toBe("20 of 20 advisories");
+    expect(countLine()).toBe("29 of 29 advisories");
   });
 
-  it("counts the Blast radius tab in direct requirements, and the flagged ones the exposure list leaves out", () => {
+  it("counts the Blast radius tab in the direct requirements on the exposure list (R12)", () => {
     renderBar(composite(), { ...FINDINGS, view: "radius" });
 
-    expect(countLine()).toBe(
-      "1 of 1 direct requirement on the exposure list, plus 6 of 6 flagged ones with nothing flagged counted under them",
-    );
+    expect(countLine()).toBe("2 of 2 direct requirements that pull in flagged packages");
+  });
+
+  it("counts no direct requirement on Blast radius when nothing is flagged, whatever exposure[] holds (R13-12)", () => {
+    const golden = pageGoldens().find(({ id }) => id === "unknown.offline‡");
+    if (golden === undefined) throw new Error("no unknown.offline‡ page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    expect(golden.report.exposure.length).toBeGreaterThan(0);
+
+    renderBar(result.model, { ...FINDINGS, view: "radius" });
+
+    expect(countLine()).toBe("0 of 0 direct requirements that pull in flagged packages");
   });
 
   it("hides the search box and hint, but keeps the count line, on a report with nothing flagged", () => {
@@ -177,7 +197,7 @@ describe("the open package and the count line", () => {
   it("names the open package once a search term hides it from the tab it belongs to", () => {
     renderBar(composite(), { ...FINDINGS, pkg: "twig/twig", q: "no-such-package" });
 
-    expect(countLine()).toContain("0 of 7 flagged packages");
+    expect(countLine()).toContain("0 of 9 flagged packages");
     expect(countLine()).toContain("twig/twig is hidden by the current filters");
   });
 

@@ -2,6 +2,7 @@ import type { ComponentChildren } from "preact";
 import { linkHref, linkState } from "../../state/hash";
 import type { LinkTarget } from "../../state/types";
 import { useReport } from "../context";
+import { isPlainClick } from "../plainClick";
 
 /**
  * A chart mark on Overview: a real link to the fragment it opens, so a reader can copy it or open
@@ -28,7 +29,7 @@ export function TabLink({
       href={linkHref(target)}
       aria-label={label}
       onClick={(event) => {
-        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (!isPlainClick(event)) return;
         event.preventDefault();
         const next = linkState(target);
         dispatch({
@@ -37,6 +38,7 @@ export function TabLink({
           filters: next.filters,
           q: next.q,
           ...(next.pkg === null ? {} : { pkg: next.pkg }),
+          ...(target.section === undefined ? {} : { section: target.section }),
         });
       }}
     >

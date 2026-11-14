@@ -24,6 +24,7 @@ export const flagsHeading = (run: Run): string => `The ${countWord(run.flag_ids.
 export const VERDICTS_DOCS = `${DOCS_URL}#the-nine-verdicts`;
 
 function zeroText(when: string): string {
+  if (when === "allowlisted") return "A score of 0: the package is allowlisted, so its flags do not count.";
   const reason = zeroVerdictReason(when);
   return reason === null ? "A score of 0, and no flag counts." : `A score of 0: ${reason}.`;
 }
@@ -45,7 +46,7 @@ export function verdictEntries(report: Report2): readonly GlossaryEntry[] {
 }
 
 export function thresholdPairs(run: Run): Thresholds {
-  return run.thresholds === null ? [] : Object.entries(run.thresholds);
+  return Object.entries(run.thresholds);
 }
 
 export function flagEntries(report: Report2): readonly GlossaryEntry[] {
@@ -82,11 +83,12 @@ export const GLOSSARY2_WORDS = {
   docs: "The verdicts on lockrot.dev",
   libyears:
     "For each package, the years between the release installed and its newest stable release, summed. It counts every drift, healthy patches included, so it says how far behind the lock is and nothing about why: no flag or gate reads it.",
-  score: "How the score adds the flags up is on the Run tab:",
+  score: "How the score adds the flags up is on the Run data tab:",
   accept:
     "A package you consider finished can be accepted the way lockrot's built-in list accepts one: an extra.lockrot.ignore entry in composer.json, with a reason. Its accepted flags stay listed and weigh 0.",
   listKeys: "On a tab with a list:",
   everyKeys: "On every tab:",
+  shortcuts: "Keyboard shortcuts",
   search: "Search keys:",
   searchKeys: ["flag:", "lead:", "verdict:", "score:>=N", "priority:"],
 } as const;

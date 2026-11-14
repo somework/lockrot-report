@@ -48,7 +48,7 @@ export function gateLine(page: Page): Locator {
   return overviewSurface(page).locator(".overview2-gate-text");
 }
 
-/** The squares of the lead's waffle, one per package checked. */
+/** The squares of the lead's waffle, one per package checked: not the key's marks beside it. */
 export function waffleSquares(page: Page): Locator {
-  return overviewSurface(page).locator(".waffle-cell");
+  return overviewSurface(page).locator(".waffle .waffle-cell");
 }

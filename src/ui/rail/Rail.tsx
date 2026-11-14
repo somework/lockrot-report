@@ -1,7 +1,6 @@
 import { useReport } from "../context";
 import type { RailGroup } from "../../domain/filters";
 import { population2, railGroups2 } from "../../domain/list";
-import { signalDef } from "../../domain/vocab";
 import "./rail.css";
 
 /** The baseline file name keeps its case, on its own line: set in the eyebrow's capitals it broke
@@ -23,14 +22,12 @@ function Opt({ group, row }: { group: RailGroup; row: RailGroup["rows"][number] 
       type="button"
       className={group.group === "gate" ? "opt opt-gate" : "opt"}
       aria-pressed={row.on}
-      title={group.group === "signal" ? signalDef(row.key) : undefined}
       onClick={(event) => {
         event.currentTarget.focus();
         dispatch({ type: "toggle", group: group.group, key: row.key });
       }}
     >
-      {group.group === "signal" ? <span className="mono">{row.key}</span> : null}
-      {" " + row.label} <span className="c">{row.count}</span>
+      {row.label} <span className="c">{row.count}</span>
     </button>
   );
 }

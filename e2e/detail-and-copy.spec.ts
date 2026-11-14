@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { commandLines, detailSurface, golden, openDetail2, phpGolden } from "./support/report2/detail";
+import {
+  commandLines,
+  detailSurface,
+  golden,
+  goldenOf,
+  openDetail2,
+  phpGolden,
+} from "./support/report2/detail";
 
 /**
  * The clipboard itself is the browser's: permissions for it exist only in Chromium, and a headless
@@ -24,13 +31,14 @@ function stubClipboard(mode: string): void {
 test.describe("report-2: the detail sheet and its copy control", () => {
   const B = "symfony/monolog-bridge";
 
-  test("names a graded replacement the answer points at", async ({ page }) => {
+  test("names a graded replacement in the move's action, linked to its registry page", async ({ page }) => {
     const sheet = await openDetail2(page, "replace-graded", "web-token/jwt-key-mgmt");
+    const [move] = goldenOf("moves", "replace-graded") as { action: string }[];
 
-    await expect(sheet.locator(".d2-answer")).toHaveText(golden("answer", "replace-graded"));
+    await expect(sheet.locator(".d3-move-action")).toHaveText(move?.action ?? "");
   });
 
-  test("names the package and its grade, and prints the golden answer above the copy control", async ({
+  test("names the package and its grade, the golden verdict line, then the move's commands", async ({
     page,
   }) => {
     const sheet = await openDetail2(page, "B", B);
@@ -38,8 +46,9 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     await expect(sheet.getByRole("heading", { level: 2 })).toHaveText(B);
     await expect(sheet.locator(".detail-head .pill")).toHaveText("critical");
     await expect(sheet.locator(".d2-asof")).toHaveText("Ages as of 2026-10-01");
-    await expect(sheet.locator(".d2-answer")).toHaveText(golden("answer", "B"));
-    expect(await commandLines(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
+    await expect(sheet.locator(".d3-verdict-line")).toHaveText(golden("verdict-line", "B"));
+    await expect(sheet.locator(".d3-move .eyebrow").first()).toHaveText("The move");
+    expect(await commandLines(sheet)).toEqual(phpGolden("B").commands_posix);
   });
 
   test("dates a branch snapshot's lock time as a snapshot, never as a release", async ({ page }) => {
@@ -68,7 +77,7 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     await expect(detailSurface(page)).toHaveCount(0);
   });
 
-  test("copies the move as written for POSIX, says so, and reverts", async ({ page }) => {
+  test("copies the move's steps as written for POSIX, says so, and reverts", async ({ page }) => {
     await page.addInitScript(stubClipboard, "resolve");
     const sheet = await openDetail2(page, "B", B);
     const copy = sheet.locator(".d2-copy-btn");
@@ -77,7 +86,7 @@ test.describe("report-2: the detail sheet and its copy control", () => {
 
     await expect(copy).toHaveText("Copied");
     expect(await page.evaluate(() => (window as unknown as { __copied: string[] }).__copied)).toEqual([
-      "composer require 'symfony/monolog-bridge:^5.4.52'",
+      phpGolden("B").commands_posix.join("\n"),
     ]);
     await expect(copy).toHaveText("Copy", { timeout: 3000 });
   });
@@ -113,5 +122,28 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     await sheet.locator(".d2-copy-btn").click();
 
     await expect(sheet.locator(".d2-copy-btn")).toHaveText("Select it and copy");
+  });
+});
+
+// PD-DETAIL-17: a wrapped command reads as one command: its later lines start to the right of its first, so a
+// flag that wraps, such as `--no-update`, does not look like the start of a new command.
+test.describe("report-2: a wrapped command at phone width", () => {
+  test.use({ viewport: { width: 375, height: 800 } });
+
+  test("hangs its second line to the right of its first", async ({ page }) => {
+    const sheet = await openDetail2(page, "A", "twig/twig");
+    const line = sheet.locator(".d3-move .d2-copy-line").first();
+    await expect(line).toContainText("--no-update");
+
+    const starts = await line.evaluate((node) => {
+      const boxes = [...node.querySelectorAll(".d3-arg")].map((arg) => arg.getBoundingClientRect());
+      const firstTop = Math.min(...boxes.map((box) => box.top));
+      const leftOf = (onFirst: boolean): number =>
+        Math.min(...boxes.filter((box) => box.top <= firstTop + 1 === onFirst).map((box) => box.left));
+      return { first: leftOf(true), second: leftOf(false) };
+    });
+
+    expect(Number.isFinite(starts.second), "the command does not wrap at 375px").toBe(true);
+    expect(starts.second).toBeGreaterThan(starts.first);
   });
 });

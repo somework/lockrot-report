@@ -7,7 +7,7 @@ Node 26 (`.nvmrc`). Everything below is an npm script:
 | `npm ci`                                                                                  | install exactly what `package-lock.json` pins                    |
 | `npm run contract:fetch`                                                                  | get lockrot's recorded bundle into `.lockrot/`, before the tests |
 | `npm run build`                                                                           | typecheck, bundle, and assemble `dist/`                          |
-| `npm test`                                                                                | unit and component tests (vitest)                                |
+| `npm test`                                                                                | unit and component tests (vitest), and the coverage gate         |
 | `npm run test:e2e`                                                                        | the browser suite (Playwright); needs `build/pages/`, see below  |
 | `npm run lint`, `npm run typecheck`, `npm run typecheck:contract`, `npm run format:check` | what CI runs before the tests, after `contract:fetch`            |
 
@@ -17,6 +17,13 @@ Node 26 (`.nvmrc`). Everything below is an npm script:
 `contract/lockrot.json` pins. Run `npm run contract:fetch` once before them, and again after the pin
 moves. It needs no network when `.lockrot/` holds the pinned commit unchanged. DESIGN.md §7 says
 how to re-pin.
+
+## Coverage
+
+`npm test` measures the coverage of `src/` and fails below the floors in `vitest.config.ts`. A floor
+holds the measured value of its folder. Raise it when a change lifts the folder, and never lower it.
+CSS counts toward no number (`css: false`), so the browser suite carries the layout rules.
+The floors hold for the whole suite only, so run one file with `npx vitest run <file>`.
 
 ## The browser suite
 
@@ -65,6 +72,9 @@ docker run --rm -v "$PWD":/work -v lockrot-report-nm:/work/node_modules -w /work
 - `src/model/normalize.ts` is the one place that reads the raw document. The page reads report-2
   only, and a report-1 document stops there, at the report-1 screen.
 - `src/template.html` is excluded from prettier: consumers match its tags byte for byte.
+- Every `uses:` in `.github/workflows/` names a full commit SHA, with its version in a comment.
+  Dependabot moves both. lockrot trusts the release job's attestation, so a tag that moves must not
+  change what that job runs.
 
 ## Fixtures
 
@@ -75,7 +85,45 @@ the report-1 screen.
 
 ## Releasing
 
-1. Move the `Unreleased` section of CHANGELOG.md under the new version, and set `version` in
-   `package.json` to the same number.
-2. Merge, then tag `vX.Y.Z` on main. The release workflow builds, attests and publishes.
-3. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.
+1. Reconcile CHANGELOG.md in one place, as lockrot's recipe does. For a final release, that place
+   is the squash merge of the release branch (`release/X.Y.0`) into `main`. In that merge, reconcile
+   the branch's CHANGELOG.md with the one on `main`, and move the `Unreleased` section under the
+   version heading. A pre-release has no heading of its own: its notes are the entry of the version
+   it leads to, on its release branch. When that entry exists, a bullet that changes behaviour the
+   entry already describes replaces that line, and is not added beside it. A bullet that removes
+   behaviour that no final release had removes that line and adds nothing, because the entry
+   compares with the previous final release. No line names a pre-release. The version heading stays
+   undated until the final release commit of step 3.
+2. Pick the pin. A pre-release pins the lockrot commit that changes the contract bundle. A final
+   tag pins the lockrot commit V that vendors an rc of the same bundle. Lockrot's main or a lockrot
+   tag must hold the pin: `node scripts/contract.mjs reachable` says whether it does. For a final
+   tag, a lockrot tag holds V, and a push of V unchanged to `release/full-check-<sha of V>` has a
+   green full check of the whole tree. A full check that an rc tag starts does not count, because
+   its branch is the tag. The release workflow needs a green CI run of a push of V to any branch
+   where lockrot's `ci.yml` runs on push, such as `main`, `release/**` or `integration/**`. It also
+   needs that full check or a green CI run of a push to lockrot's main.
+3. For a final tag, start this commit from the merge of step 1. Without that merge, `repin`
+   changes other files under `contract/`. Run `node scripts/contract.mjs repin <pin>`. Set
+   `version` in `package.json` and both `version` fields of `package-lock.json` (the root and
+   `packages[""]`) to the same number. `npm version <version> --no-git-tag-version` sets all three.
+   For a final tag, commit only the version and the pin: `package.json`, the two `version` fields of
+   `package-lock.json`, the CHANGELOG heading and `contract/lockrot.json`. If `repin` still
+   changes another file under `contract/` after that merge, V does not vendor the same bundle, so stop. For a final tag, that
+   commit also dates the CHANGELOG heading with the release day, the UTC day of the tag:
+   `## [X.Y.Z] - YYYY-MM-DD`, as Keep a Changelog asks. The release workflow refuses a final tag
+   whose heading has no date. A pre-release leaves the heading undated. Merge the commit into main
+   for a final tag, or into its release branch for a pre-release.
+4. Before the first final tag, list the rulesets with `gh api repos/somework/lockrot-report/rulesets`.
+   The list leaves out each ruleset's conditions and rules, so read each one with
+   `gh api repos/somework/lockrot-report/rulesets/<id>`. Confirm that a tag ruleset on
+   `refs/tags/v*` has the `deletion` and `update` rules. If it is missing, create it. A moved tag
+   gets a second attestation, and lockrot's `update-renderer` then cannot name one source commit.
+   Then tag `vX.Y.Z` on main, or tag a pre-release on main or its release branch. The release
+   workflow refuses a final tag that main does not hold, and a pre-release tag that neither main
+   nor a release branch holds. It also refuses a pin that the check of step 2 refuses, and a final
+   tag whose pin lacks a green CI push run, or lacks both a green full check and a green CI run on
+   main. A pre-release needs no such run, because lockrot's renderer test fails on its pin until
+   lockrot vendors it. The workflow runs the gates of ci.yml and, as ci.yml does, the browser suite
+   in one job per browser on the gates job's build. Beside them, the build job builds the release
+   files. After every gate, e2e and build job passes, the publish job attests and publishes them.
+5. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.

@@ -1,6 +1,9 @@
+import { newTab } from "../domain/rich";
+import { HTML_COMMAND } from "./Footer";
 import { ScreenFrame } from "./ScreenFrame";
 
 const OLDER_RELEASE = "https://github.com/somework/lockrot-report/releases/tag/v0.13.0";
+const OLDER_RELEASE_NAME = "lockrot-report v0.13.0";
 
 /** Shown in place of a report-1 document: renderer 0.14 reads report-2 only, and derives nothing
  *  from an older document (SPEC §7.9.17, PD-SCHEMA-1). `version` is the document's `lockrot.version`. */
@@ -27,15 +30,20 @@ export function Report1Screen({ version }: { version: string | null }) {
           <pre>
             <code>composer require --dev somework/lockrot</code>
             {"\n"}
-            <code>composer lockrot</code>
+            <code>{HTML_COMMAND}</code>
           </pre>
         </section>
         <section className="screen-card" aria-labelledby="report1-older">
           <h2 id="report1-older">Open it with lockrot-report 0.13</h2>
           <p>
             The 0.13 page reads this report as it was written.{" "}
-            <a href={OLDER_RELEASE} target="_blank" rel="noopener noreferrer">
-              lockrot-report v0.13.0
+            <a
+              href={OLDER_RELEASE}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={newTab(OLDER_RELEASE_NAME)}
+            >
+              {OLDER_RELEASE_NAME}
             </a>
           </p>
         </section>

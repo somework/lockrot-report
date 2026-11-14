@@ -61,7 +61,7 @@ test.describe("report-2: the glossary and the phone folds draw the one marker", 
     const summary = glossary(page).locator("summary", { hasText: "The signals" });
 
     // Read once the rotate transition has settled: the end state is the point, not a frame mid-flight.
-    await page.waitForTimeout(250);
+    await expect.poll(() => page.evaluate(() => document.getAnimations().length)).toBe(0);
     const closed = await markerRotation(summary);
     await summary.click();
     await expect.poll(() => markerRotation(summary)).not.toBe(closed);
@@ -107,10 +107,10 @@ test.describe("report-2: the detail sheet's folds draw the one marker", () => {
     }
   });
 
-  test("the Why and Security level-1 buttons draw the shared l1 marker", async ({ page }) => {
+  test("the Why and range-string level-1 buttons draw the shared l1 marker", async ({ page }) => {
     const sheet = await openDetail2(page, "B", "symfony/monolog-bridge");
 
-    for (const name of ["Show the arithmetic", /^3 more ways out/]) {
+    for (const name of ["Show the arithmetic", "19 ranges"]) {
       const mark = sheet.getByRole("button", { name }).locator(".l1-mark");
       await expect(mark).toBeAttached();
       expect(await mark.evaluate((el) => el.getBoundingClientRect().width)).toBeGreaterThan(0);

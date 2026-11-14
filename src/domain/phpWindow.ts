@@ -1,0 +1,381 @@
+/**
+ * The words of `run.php_window` (SPEC §5.9): the Overview's PHP state line (§7.9.4), the Run tab's
+ * window rows (§7.9.16) and the edge setter line of the sheet (G157, §7.9.8.14). Every constraint
+ * prints in full (O-5).
+ */
+
+import type { Finding, HeldBy, PhpWindowReq, PhpWindowSet, Report2, Run, TargetFix } from "../model/report";
+import { NAMES_SHOWN, newestPhpWords, signalData } from "./findingWords";
+import { plural, pluralNoun } from "./format";
+import { joinAnd } from "./joinWords";
+import { linkWords } from "./linkWords";
+import { checkReasonRich } from "./pageVocabulary";
+import { plain } from "./rich";
+import { commandLine } from "./shellArgv";
+
+type PhpWindow = NonNullable<Run["php_window"]>;
+
+/** The set the run analysed: with require-dev under `--dev`, else without. */
+function analysedSet(run: Run, window: PhpWindow): PhpWindowSet {
+  return run.include_dev ? (window.with_dev ?? window.without_dev) : window.without_dev;
+}
+
+// shortcut: the page has no list of known minors, so only the major breaks PHP skipped are known
+// here; a new major adds its pair.
+const NEXT_MAJOR: Readonly<Record<string, string>> = { "5.6": "7.0", "7.4": "8.0" };
+
+const minorRank = (minor: string): number => {
+  const [major = 0, next = 0] = minor.split(".").map(Number);
+  return major * 1000 + next;
+};
+
+function followsGa(previous: string, minor: string): boolean {
+  if (NEXT_MAJOR[previous] === minor) return true;
+  const [pMajor, pMinor] = previous.split(".").map(Number);
+  const [major, next] = minor.split(".").map(Number);
+  return pMajor === major && (pMinor ?? 0) + 1 === next;
+}
+
+const majorOf = (minor: string): number => Math.floor(minorRank(minor) / 1000);
+
+const minorBelow = (minor: string): string => {
+  const [major = 0, next = 0] = minor.split(".").map(Number);
+  return `${major}.${next - 1}`;
+};
+
+/** An inserted minor sits between the GA minor below it and the GA minor above it (ruling R15-3b). */
+function follows(previous: string, minor: string, known: readonly string[]): boolean {
+  const between = (k: string): boolean =>
+    minorRank(previous) < minorRank(k) && minorRank(k) < minorRank(minor);
+  if (known.some(between)) return false;
+  if (known.includes(previous) && followsGa(minorBelow(previous), minor)) return true;
+  // shortcut: the newest GA minor is not known here, so an inserted X.0 joins any (X-1).y below it.
+  if (known.includes(minor) && minor.endsWith(".0") && majorOf(previous) + 1 === majorOf(minor)) return true;
+  return followsGa(previous, minor);
+}
+
+/** "7.4", "8.3 to 8.4", or "7.1 and 8.1 to 8.5" across a gap. `known` holds the known minors that
+ *  are not GA minors, such as an inserted target minor (ruling R15-3b). */
+export function minorsWords(minors: readonly string[], gaps: boolean, known: readonly string[] = []): string {
+  const runs: string[][] = [];
+  for (const minor of minors) {
+    const last = runs.at(-1);
+    const previous = last?.at(-1);
+    if (last !== undefined && previous !== undefined && (!gaps || follows(previous, minor, known)))
+      last.push(minor);
+    else runs.push([minor]);
+  }
+  return joinAnd(
+    runs.map((run) => (run.length === 1 ? (run[0] ?? "") : `${run[0] ?? ""} to ${run.at(-1) ?? ""}`)),
+  );
+}
+
+/** `joinAnd` up to `NAMES_SHOWN` items, then "a, b, c and {n} more". */
+function joinAndCapped(items: readonly string[]): string {
+  if (items.length <= NAMES_SHOWN) return joinAnd(items);
+  return `${items.slice(0, NAMES_SHOWN).join(", ")} and ${items.length - NAMES_SHOWN} more`;
+}
+
+function rootSection({ link, dev }: Pick<PhpWindowReq, "link" | "dev">): string {
+  if (link === "conflict") return "conflict";
+  return dev ? "require-dev" : "require";
+}
+
+/** A link of a setter list: "{name} {constraint}", "{name} conflict {target} {constraint}",
+ *  "{name} php-64bit {constraint}" or "require.php {constraint}"; with its version where the list
+ *  names the closest minors. */
+export function reqWords(req: PhpWindowReq, withVersion = false): string {
+  if (req.name === null) return `${rootSection(req)}.${req.target} ${req.constraint}`;
+  const name = withVersion && req.version !== null ? `${req.name} ${req.version}` : req.name;
+  if (req.link === "conflict") return `${name} conflict ${req.target} ${req.constraint}`;
+  return req.target === "php" ? `${name} ${req.constraint}` : `${name} ${req.target} ${req.constraint}`;
+}
+
+const reqList = (reqs: readonly PhpWindowReq[], withVersion = false): string =>
+  joinAndCapped([...new Set(reqs.map((req) => reqWords(req, withVersion)))]);
+
+function closestWords(
+  { minors, set_by: setBy }: NonNullable<PhpWindowSet["closest"]>,
+  known: readonly string[],
+): string {
+  return `${minorsWords(minors, true, known)} ${pluralNoun(minors.length, "is", "are")} excluded only by ${reqList(setBy, true)}`;
+}
+
+/** One Run tab row's cells (SPEC §7.9.16): the minors, the lowest edge and the excluded minor. */
+function setCells(set: PhpWindowSet, known: readonly string[]): string {
+  if (set.minors.length === 0)
+    return `none${set.closest === null ? "" : ` · ${closestWords(set.closest, known)}`}`;
+  const lower = set.lower_edge;
+  const upper = set.upper_edge;
+  return [
+    minorsWords(set.minors, set.gaps, known),
+    ...(lower === null
+      ? []
+      : [`lowest ${lower.php}${lower.set_by.length > 0 ? `, set by ${reqList(lower.set_by)}` : ""}`]),
+    ...(upper === null ? [] : [`${upper.excludes} excluded by ${reqList(upper.set_by)}`]),
+  ].join(" · ");
+}
+
+/** "8" reads as "8.0", as lockrot normalises `target_php`. */
+const minorOf = (version: string): string => {
+  const [major = "", minor = "0"] = version.split(".");
+  return `${major}.${minor}`;
+};
+
+/** lockrot inserts the target's minor into the known minors when the GA data does not list it. */
+const targetMinor = (window: PhpWindow): readonly string[] => [minorOf(window.target.php)];
+
+// Composer's VersionParser reads these modifiers as stable, and any other as a pre-release or a dev build.
+const STABLE =
+  /^v?(\d+)(?:\.(\d+))?(?:\.\d+){0,2}(?:[._-]?(?:stable|patch|pl|p)(?:[.-]?\d+(?:[.-]\d+)*)?)?(?:\+.*)?$/i;
+
+const isStableIn = (version: string, minor: string): boolean => {
+  const match = STABLE.exec(version);
+  return match !== null && `${Number(match[1])}.${Number(match[2] ?? 0)}` === minor;
+};
+
+/** Composer's config.platform.php when it is not a stable release of the target's minor (ruling L5),
+ *  else null: the move check then solves at another PHP than `composer update` does. */
+export function overrideOutsideTarget(run: Pick<Run, "php_window" | "target_php">): string | null {
+  const override = run.php_window?.platform_override ?? null;
+  return override === null || isStableIn(override, minorOf(run.target_php)) ? null : override;
+}
+
+/** The Run tab's PHP window rows as label and value, a `note` row under its label; empty when
+ *  `run.php_window` is null. */
+export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value: string; note?: string }[] {
+  const window = run.php_window;
+  if (window === null) return [];
+  const known = targetMinor(window);
+  const solvesApart =
+    overrideOutsideTarget(run) !== null &&
+    run.move_check !== null &&
+    run.move_check.baseline !== "not_checked";
+  return [
+    ...(window.with_dev === null
+      ? [{ key: "PHP window", value: setCells(window.without_dev, known) }]
+      : [
+          { key: "PHP window, with require-dev", value: setCells(window.with_dev, known) },
+          { key: "PHP window, without require-dev", value: setCells(window.without_dev, known) },
+        ]),
+    ...(window.platform_override === null
+      ? []
+      : [
+          {
+            key: "Composer's config.platform.php",
+            value: window.platform_override,
+            ...(solvesApart
+              ? {
+                  note: `composer update solves at ${window.platform_override}, and the move check solves at the target PHP ${window.target.php}.`,
+                }
+              : {}),
+          },
+        ]),
+    ...(window.host_requires.length === 0
+      ? []
+      : [{ key: "Host features required", value: window.host_requires.join(", ") }]),
+  ];
+}
+
+/** The rows as one string each (golden `php_rows`). */
+export const windowRows = (report: Pick<Report2, "run">): string[] =>
+  windowFacts(report).flatMap(({ key, value, note }) => [
+    `${key}: ${value}`,
+    ...(note === undefined ? [] : [note]),
+  ]);
+
+const sameMinors = (a: PhpWindowSet, b: PhpWindowSet): boolean =>
+  a.minors.length === b.minors.length && a.minors.every((minor, i) => minor === b.minors[i]);
+
+function setWords(set: PhpWindowSet, known: readonly string[]): string {
+  if (set.minors.length > 0) return `on PHP ${minorsWords(set.minors, set.gaps, known)}`;
+  return `on no PHP${set.closest === null ? "" : ` (${closestWords(set.closest, known)})`}`;
+}
+
+function windowClause(window: PhpWindow): string {
+  const { with_dev: withDev, without_dev: withoutDev } = window;
+  const known = targetMinor(window);
+  if (withDev === null || sameMinors(withDev, withoutDev))
+    return `this lock installs ${setWords(withoutDev, known)}`;
+  return `without require-dev this lock installs ${setWords(withoutDev, known)}, and with require-dev ${setWords(withDev, known)}`;
+}
+
+const ROOT_LINKS: readonly string[] = ["require", "require-dev", "conflict"];
+const PHP_TARGETS: readonly (string | null)[] = ["php", "php-64bit"];
+
+/** §5.9's root-ceiling test: a refusal whose every hold is a root php link. */
+function isRootCeiling(fix: TargetFix): boolean {
+  return (
+    fix.check === "refused" &&
+    fix.held_by.length > 0 &&
+    fix.held_by.every(
+      (h) => h.source === "root" && ROOT_LINKS.includes(h.link) && PHP_TARGETS.includes(h.target),
+    )
+  );
+}
+
+/** A hold as the `php:` line words it (SPEC §7.0), with the link words of the move card; a root
+ *  hold on a require-dev package says so, since its link names no section. */
+function holdWords(h: HeldBy, fix: TargetFix): string {
+  const dev =
+    h.source === "root" && h.link !== "require-dev" && fix.packages.some((p) => p.dev && p.name === h.target);
+  return `${h.source === "root" ? "composer.json" : `${h.package ?? ""} ${h.version ?? ""}`} ${plain(linkWords(h))}${dev ? " in require-dev" : ""}`;
+}
+
+function packageNames(fix: TargetFix): string[] {
+  const names: string[] = [];
+  for (const { name, dev } of fix.packages) {
+    const word = dev ? `${name} (require-dev)` : name;
+    if (!names.includes(word)) names.push(word);
+  }
+  return names;
+}
+
+function packagesClause(fix: TargetFix, target: string): string {
+  const names = packageNames(fix);
+  return `${plural(names.length, "package excludes", "packages exclude")} ${target}: ${joinAndCapped(names)}`;
+}
+
+/** The `lock_platform` clause (SPEC §7.0); with no package listed it carries the fix's answer. */
+function lockPlatformClause(fix: TargetFix, target: string, answers: boolean): string {
+  const links = joinAnd([...new Set(fix.lock_platform.map((l) => reqWords(l)))]);
+  const records = `the lock records ${links}, which composer.json does not have`;
+  if (fix.check === "resolves") {
+    const stepped = answers && fix.platform_step;
+    const step = stepped ? `set config.platform.php to your PHP ${target} release, then ` : "";
+    const command = fix.command === null ? null : commandLine(fix.command, "posix");
+    if (command !== null) return `${records}: ${step}${command} rewrites it`;
+    // Not the answer: the clause before it already names the update and its command.
+    if (!answers) return `${records}, and that update rewrites it`;
+    const rewrites = `resolves the update that rewrites it${unprintedTail(fix)}`;
+    if (stepped) return `${records}: ${step}Composer's solver ${rewrites}`;
+    return `${records}, and Composer's solver at PHP ${target} ${rewrites}`;
+  }
+  if (!answers) return records;
+  if (fix.check === "refused") {
+    const holds = fix.held_by.length === 0 ? "" : `: ${joinAnd(fix.held_by.map((h) => holdWords(h, fix)))}`;
+    return `${records}, and Composer's solver at PHP ${target} refuses the update that rewrites it${holds}`;
+  }
+  return `${records}, and the update that rewrites it is not checked (${reasonWords(fix)})`;
+}
+
+/** SPEC §5.6: an argv that fails the argument rule is named as refused, never printed. */
+const unprintedTail = (fix: TargetFix): string =>
+  fix.command === null ? "" : ", and its command holds characters the page does not print";
+
+const resolvesWords = (lead: string, fix: TargetFix): string => {
+  const command = fix.command === null ? null : commandLine(fix.command, "posix");
+  return command === null
+    ? `${lead} resolves this update${unprintedTail(fix)}`
+    : `${lead} resolves this update: ${command}`;
+};
+
+const reasonWords = (fix: TargetFix): string =>
+  fix.reason === null ? "the run checked no move" : plain(checkReasonRich(fix.reason));
+
+/** `named` is the target as the root ceiling names it (ruling R-e). */
+function fixClauses(fix: TargetFix, target: string, named: string): string[] {
+  if (fix.lock_platform.length === 0) return answerClauses(fix, target, named);
+  const ceiling = isRootCeiling(fix);
+  if (fix.packages.length === 0 && !ceiling) return [lockPlatformClause(fix, target, true)];
+  return [...answerClauses(fix, target, named), lockPlatformClause(fix, target, false)];
+}
+
+function answerClauses(fix: TargetFix, target: string, named: string): string[] {
+  if (isRootCeiling(fix)) {
+    const links = joinAndCapped([...new Set(fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`))]);
+    const names = packageNames(fix);
+    // A package that also excludes the target makes "only a change to the root" false.
+    if (names.length > 0)
+      return [
+        `your target, ${named}, is excluded by ${links} and by ${plural(names.length, "package", "packages")}: ${joinAndCapped(names)}`,
+      ];
+    return [`your target, ${named}, is excluded, and only a change to ${links} can admit it`];
+  }
+  const solver = `Composer's solver at PHP ${target}`;
+  switch (fix.check) {
+    case "resolves":
+      return [
+        packagesClause(fix, target),
+        resolvesWords(
+          fix.platform_step
+            ? `set config.platform.php to your PHP ${target} release, then Composer's solver`
+            : solver,
+          fix,
+        ),
+      ];
+    case "refused": {
+      const their = packageNames(fix).length === 1 ? "its" : "their";
+      const holds = fix.held_by.length === 0 ? "" : `: ${joinAnd(fix.held_by.map((h) => holdWords(h, fix)))}`;
+      return [packagesClause(fix, target), `${solver} refuses ${their} update${holds}`];
+    }
+    default:
+      return [packagesClause(fix, target), `not checked (${reasonWords(fix)})`];
+  }
+}
+
+const isCapped = (f: Finding): boolean => f.flags.some((flag) => flag.id === "capped");
+
+/** The set that `target.inside` reads keeps the target minor, so only the pinned patch fails there. */
+const keepsMinor = (window: PhpWindow, target: string): boolean =>
+  (window.with_dev ?? window.without_dev).minors.includes(minorOf(target));
+
+/** The clauses of the PHP state line (SPEC §7.9.4); null when the line does not show. */
+export function phpStateClauses(report: Pick<Report2, "run" | "findings">): string[] | null {
+  const { run, findings } = report;
+  const window = run.php_window;
+  if (window === null) return null;
+  const capped = findings.filter(isCapped);
+  const inside = window.target.inside;
+  if (inside && window.platform_override === null && capped.length === 0) return null;
+  const fix = window.target_fix;
+  const target = run.target_php;
+  const ceiling = fix !== null && isRootCeiling(fix);
+  const patch = keepsMinor(window, target);
+  const named = patch ? window.target.php : target;
+  const excluded = patch ? `, but not on your target, ${named}` : `, so your target, ${target}, is excluded`;
+  const head = windowClause(window) + (inside || ceiling ? "" : excluded);
+  if (fix !== null) return [head, ...fixClauses(fix, target, named)];
+  const s11 = capped.map((f) => signalData(f, "S11")).find((data) => data !== null) ?? null;
+  return [
+    head,
+    ...(window.platform_override === null || run.move_check?.reason === "platform_config_invalid"
+      ? []
+      : [
+          `Composer solves at ${window.platform_override}, the PHP that config.platform.php sets in Composer's config, not the PHP of the machine`,
+        ]),
+    ...(s11 === null
+      ? []
+      : [`${plural(capped.length, "package stops", "packages stop")} below ${newestPhpWords(s11)}`]),
+  ];
+}
+
+/** G157: the edges of the analysed set that this package sets, where they are stricter than
+ *  require.php (O-2). A package with the `capped` flag says it in its reading instead. */
+export function edgeSetterLines(finding: Finding, run: Run): string[] {
+  const window = run.php_window;
+  if (window === null || isCapped(finding)) return [];
+  const set = analysedSet(run, window);
+  const names = (reqs: readonly PhpWindowReq[]): boolean => reqs.some((req) => req.name === finding.package);
+  const lower = set.lower_edge;
+  const upper = set.upper_edge;
+  const floor = run.project_php_lowest;
+  return [
+    ...(lower !== null && names(lower.set_by) && (floor === null || isAbove(lower.php, floor))
+      ? [`It sets the lowest PHP this lock admits: ${lower.php}`]
+      : []),
+    ...(upper !== null && names(upper.set_by) && upper.set_by.every((req) => req.name !== null)
+      ? [`It sets the highest PHP this lock admits: it excludes ${upper.excludes}`]
+      : []),
+  ];
+}
+
+function isAbove(version: string, than: string): boolean {
+  const a = version.split(".").map(Number);
+  const b = than.split(".").map(Number);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const d = (a[i] ?? 0) - (b[i] ?? 0);
+    if (d !== 0) return d > 0;
+  }
+  return false;
+}

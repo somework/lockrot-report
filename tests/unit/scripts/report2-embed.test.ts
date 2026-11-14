@@ -43,6 +43,7 @@ describe("isCorpusSlice", () => {
     const expected = [
       "composite",
       ...cases.filter((name) => name.includes("offline")),
+      "page-empty-lock.offline-dagger",
       "baselined-wallabag-2.6",
       "baselined-wallabag-main",
     ];

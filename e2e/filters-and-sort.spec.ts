@@ -55,7 +55,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
     await report.gotoReport2WithHash("composite", "view=findings");
     await report.railOption("scope", "transitive");
 
-    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn"]);
+    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn", "friendsofsymfony/oauth2-php"]);
     expect(await report.railOptionPressed("scope", "transitive")).toBe(true);
   });
 
@@ -70,7 +70,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
     await report.clear();
 
     expect(await report.searchValue()).toBe("");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
     expect(await report.activeTab()).toBe("packages");
     expect((await report.detail()).name).toBe("twig/twig");
   });
@@ -91,7 +91,11 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
     await report.gotoReport2WithHash("composite", "view=findings");
     await report.toggleRailRow("stale");
 
-    expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"]);
+    expect(await report.rows()).toEqual([
+      "friendsofsymfony/oauth-server-bundle",
+      "tubalmartin/cssmin",
+      "friendsofsymfony/oauth2-php",
+    ]);
     await expect(page).toHaveURL(/flag=stale/);
     await expect(page.getByRole("button", { name: /^stale \d+$/ })).toHaveAttribute("aria-pressed", "true");
   });
@@ -100,7 +104,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
     await report.gotoReport2WithHash("composite", "view=findings");
     await report.toggleRailRow("not in composer.json");
 
-    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn"]);
+    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn", "friendsofsymfony/oauth2-php"]);
   });
 
   test("accepted: the toggle hides the accepted pills, keeps every row, and is no filter chip", async ({

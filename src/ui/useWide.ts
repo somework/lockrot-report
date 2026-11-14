@@ -1,7 +1,9 @@
 import { useEffect, useState } from "preact/hooks";
 
-/** The three-column layout: the detail sits beside the list (legacy report.js:1129). */
-export const WIDE_QUERY = "(min-width: 1181px)";
+/** The split layout: the open package sits beside the list, which stays in view. */
+export const WIDE_QUERY = "(min-width: 1000px)";
+/** The filter rail keeps a column of its own; narrower, it folds above the list. */
+export const RAIL_QUERY = "(min-width: 1024px)";
 /** Phone widths: the list comes first, the ledger and the rail fold away above it (DESIGN.md §8). */
 export const NARROW_QUERY = "(max-width: 759px)";
 
@@ -44,6 +46,10 @@ export function useMediaQuery(query: string, fallback: boolean): boolean {
  */
 export function useWide(): boolean {
   return useMediaQuery(WIDE_QUERY, true);
+}
+
+export function useRailRoom(): boolean {
+  return useMediaQuery(RAIL_QUERY, true);
 }
 
 export function useNarrow(): boolean {
