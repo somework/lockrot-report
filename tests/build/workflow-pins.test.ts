@@ -45,7 +45,7 @@ test("every third-party workflow action is pinned by a full commit SHA with its 
 
 /** The lines from `from` up to the next line at `indent` or shallower. */
 function block(lines: readonly string[], from: number, indent: number): string[] {
-  const end = lines.findIndex((next, i) => i > from && next.trim() !== "" && next.search(/\S/) <= indent);
+  const end = lines.findIndex((next, i) => i > from && next.search(/\S/) <= indent);
   return lines.slice(from, end === -1 ? undefined : end);
 }
 
@@ -53,7 +53,8 @@ function block(lines: readonly string[], from: number, indent: number): string[]
  *  `persist-credentials: false` under the step's own `with:` key. A step runs from its `- ` line to
  *  the next line at the same or a shallower indent. */
 function checkoutsKeepingToken(text: string): string[] {
-  const lines = text.split("\n");
+  // A blank or comment-only line ends no block and sets no indent.
+  const lines = text.split("\n").filter((line) => line.trim() !== "" && !line.trimStart().startsWith("#"));
   return lines.flatMap((line, at) => {
     const head = /^(\s*)- /.exec(line);
     if (head === null) return [];
@@ -61,7 +62,7 @@ function checkoutsKeepingToken(text: string): string[] {
     const step = block(lines, at, indent);
     const checkout = /^\s*(-\s+)?uses:\s*["']?actions\/checkout@/m.test(step.join("\n"));
     const withAt = step.findIndex((key) => /^\s*(-\s+)?with:\s*(#.*)?$/.test(key) && key.indexOf("with:") === indent + 2);
-    const inputs = (withAt === -1 ? [] : block(step, withAt, indent + 2).slice(1)).filter((l) => l.trim() !== "");
+    const inputs = withAt === -1 ? [] : block(step, withAt, indent + 2).slice(1);
     const keyIndent = inputs[0]?.search(/\S/);
     const dropsToken = inputs.some(
       (input) =>
@@ -78,6 +79,7 @@ test.each([
   ["- uses: actions/checkout@abc # v7.0.1\n- uses: actions/cache@abc # v6.1.0\n  with:\n    persist-credentials: false", 1],
   ["- name: Checkout\n  uses: actions/checkout@abc # v7.0.1\n  env:\n    persist-credentials: 'false'", 1],
   ["- uses: actions/checkout@abc # v7.0.1\n  with:\n    path: |\n      persist-credentials: false", 1],
+  ["- uses: actions/checkout@abc # v7.0.1\n  with:\n      # checkout path\n    path: |\n      persist-credentials: false", 1],
   ["- uses: actions/checkout@abc # v7.0.1\n  with:\n    fetch-depth: 0\n    persist-credentials: false", 0],
 ])("%j keeps the token in %i checkout steps", (text, kept) => {
   expect(checkoutsKeepingToken(text)).toHaveLength(kept);
