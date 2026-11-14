@@ -42,3 +42,29 @@ test("every third-party workflow action is pinned by a full commit SHA with its 
   expect(lines.length).toBeGreaterThan(0);
   expect(lines.filter((line) => !isPinned(line))).toEqual([]);
 });
+
+/** Each `actions/checkout` step as `file: text`, from its `uses:` line to the next step or a shallower line. */
+function checkoutSteps(): string[] {
+  return readdirSync(WORKFLOWS)
+    .filter((name) => /\.ya?ml$/.test(name))
+    .flatMap((name) => {
+      const lines = readFileSync(join(WORKFLOWS, name), "utf8").split("\n");
+      return lines.flatMap((line, at) => {
+        const head = /^(\s*)- uses: actions\/checkout@/.exec(line);
+        if (head === null) return [];
+        const indent = head[1]?.length ?? 0;
+        const end = lines.findIndex(
+          (next, i) => i > at && next.trim() !== "" && next.search(/\S/) <= indent,
+        );
+        return [`${name}: ${lines.slice(at, end === -1 ? undefined : end).join("\n")}`];
+      });
+    });
+}
+
+// `npm ci` runs dependency install scripts, which could read a token that checkout left in .git/config.
+test("every actions/checkout step sets persist-credentials: false", () => {
+  const steps = checkoutSteps();
+
+  expect(steps.length).toBeGreaterThan(0);
+  expect(steps.filter((step) => !/^\s+persist-credentials: false$/m.test(step))).toEqual([]);
+});
