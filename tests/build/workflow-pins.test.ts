@@ -43,28 +43,40 @@ test("every third-party workflow action is pinned by a full commit SHA with its 
   expect(lines.filter((line) => !isPinned(line))).toEqual([]);
 });
 
-/** Each `actions/checkout` step as `file: text`, from its `uses:` line to the next step or a shallower line. */
-function checkoutSteps(): string[] {
-  return readdirSync(WORKFLOWS)
-    .filter((name) => /\.ya?ml$/.test(name))
-    .flatMap((name) => {
-      const lines = readFileSync(join(WORKFLOWS, name), "utf8").split("\n");
-      return lines.flatMap((line, at) => {
-        const head = /^(\s*)- uses: actions\/checkout@/.exec(line);
-        if (head === null) return [];
-        const indent = head[1]?.length ?? 0;
-        const end = lines.findIndex(
-          (next, i) => i > at && next.trim() !== "" && next.search(/\S/) <= indent,
-        );
-        return [`${name}: ${lines.slice(at, end === -1 ? undefined : end).join("\n")}`];
-      });
-    });
+/** The `actions/checkout` steps of one workflow text that leave the job token in .git/config. A step
+ *  runs from its `- ` line to the next line at the same or a shallower indent. */
+function checkoutsKeepingToken(text: string): string[] {
+  const lines = text.split("\n");
+  return lines.flatMap((line, at) => {
+    const head = /^(\s*)- /.exec(line);
+    if (head === null) return [];
+    const indent = head[1]?.length ?? 0;
+    const end = lines.findIndex((next, i) => i > at && next.trim() !== "" && next.search(/\S/) <= indent);
+    const step = lines.slice(at, end === -1 ? undefined : end).join("\n");
+    const checkout = /^\s*(-\s+)?uses:\s*["']?actions\/checkout@/m.test(step);
+    const dropsToken = /^\s+persist-credentials:\s*["']?false["']?\s*(#.*)?$/m.test(step);
+    return checkout && !dropsToken ? [step] : [];
+  });
 }
+
+test.each([
+  ["- uses: actions/checkout@abc # v7.0.1\n  with:\n    persist-credentials: false", 0],
+  ["- name: Checkout\n  uses: actions/checkout@abc # v7.0.1", 1],
+  ["- name: Checkout\n  uses: actions/checkout@abc # v7.0.1\n  with:\n    persist-credentials: 'false' # no token", 0],
+  ["- uses: actions/checkout@abc # v7.0.1\n- uses: actions/cache@abc # v6.1.0\n  with:\n    persist-credentials: false", 1],
+])("%j keeps the token in %i checkout steps", (text, kept) => {
+  expect(checkoutsKeepingToken(text)).toHaveLength(kept);
+});
 
 // `npm ci` runs dependency install scripts, which could read a token that checkout left in .git/config.
 test("every actions/checkout step sets persist-credentials: false", () => {
-  const steps = checkoutSteps();
+  const files = readdirSync(WORKFLOWS).filter((name) => /\.ya?ml$/.test(name));
+  const checkouts = usesLines().filter((line) => line.includes("actions/checkout@"));
 
-  expect(steps.length).toBeGreaterThan(0);
-  expect(steps.filter((step) => !/^\s+persist-credentials: false$/m.test(step))).toEqual([]);
+  expect(checkouts.length).toBeGreaterThan(0);
+  expect(
+    files.flatMap((name) =>
+      checkoutsKeepingToken(readFileSync(join(WORKFLOWS, name), "utf8")).map((step) => `${name}: ${step}`),
+    ),
+  ).toEqual([]);
 });
