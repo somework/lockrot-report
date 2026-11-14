@@ -43,19 +43,27 @@ test("every third-party workflow action is pinned by a full commit SHA with its 
   expect(lines.filter((line) => !isPinned(line))).toEqual([]);
 });
 
-/** The `actions/checkout` steps of one workflow text that leave the job token in .git/config. A step
- *  runs from its `- ` line to the next line at the same or a shallower indent. */
+/** The lines from `from` up to the next line at `indent` or shallower. */
+function block(lines: readonly string[], from: number, indent: number): string[] {
+  const end = lines.findIndex((next, i) => i > from && next.trim() !== "" && next.search(/\S/) <= indent);
+  return lines.slice(from, end === -1 ? undefined : end);
+}
+
+/** The `actions/checkout` steps of one workflow text that leave the job token in .git/config: no
+ *  `persist-credentials: false` under the step's own `with:` key. A step runs from its `- ` line to
+ *  the next line at the same or a shallower indent. */
 function checkoutsKeepingToken(text: string): string[] {
   const lines = text.split("\n");
   return lines.flatMap((line, at) => {
     const head = /^(\s*)- /.exec(line);
     if (head === null) return [];
     const indent = head[1]?.length ?? 0;
-    const end = lines.findIndex((next, i) => i > at && next.trim() !== "" && next.search(/\S/) <= indent);
-    const step = lines.slice(at, end === -1 ? undefined : end).join("\n");
-    const checkout = /^\s*(-\s+)?uses:\s*["']?actions\/checkout@/m.test(step);
-    const dropsToken = /^\s+persist-credentials:\s*["']?false["']?\s*(#.*)?$/m.test(step);
-    return checkout && !dropsToken ? [step] : [];
+    const step = block(lines, at, indent);
+    const checkout = /^\s*(-\s+)?uses:\s*["']?actions\/checkout@/m.test(step.join("\n"));
+    const withAt = step.findIndex((key) => /^\s*(-\s+)?with:\s*(#.*)?$/.test(key) && key.indexOf("with:") === indent + 2);
+    const inputs = withAt === -1 ? [] : block(step, withAt, indent + 2).slice(1);
+    const dropsToken = inputs.some((input) => /^\s+persist-credentials:\s*["']?false["']?\s*(#.*)?$/.test(input));
+    return checkout && !dropsToken ? [step.join("\n")] : [];
   });
 }
 
@@ -64,6 +72,8 @@ test.each([
   ["- name: Checkout\n  uses: actions/checkout@abc # v7.0.1", 1],
   ["- name: Checkout\n  uses: actions/checkout@abc # v7.0.1\n  with:\n    persist-credentials: 'false' # no token", 0],
   ["- uses: actions/checkout@abc # v7.0.1\n- uses: actions/cache@abc # v6.1.0\n  with:\n    persist-credentials: false", 1],
+  ["- name: Checkout\n  uses: actions/checkout@abc # v7.0.1\n  env:\n    persist-credentials: 'false'", 1],
+  ["- uses: actions/checkout@abc # v7.0.1\n  with:\n    fetch-depth: 0\n    persist-credentials: false", 0],
 ])("%j keeps the token in %i checkout steps", (text, kept) => {
   expect(checkoutsKeepingToken(text)).toHaveLength(kept);
 });
