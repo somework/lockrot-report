@@ -246,7 +246,7 @@ export interface RadiusAnswer<F extends RadiusFinding = RadiusFinding> {
   readonly exposureCount: number;
 }
 
-export const ANSWER_MAX_ROWS = 3;
+export const RADIUS_NAMED_MAX = 3;
 
 /** `pulled` is the count the named rows must hold half of; the distinct listed packages by default. */
 export function radiusAnswer<F extends RadiusFinding>(
@@ -262,7 +262,7 @@ export function radiusAnswer<F extends RadiusFinding>(
   for (const row of listing) {
     top.push(row);
     for (const f of row.pulled) held.add(f.package);
-    if (held.size * 2 >= half || top.length === ANSWER_MAX_ROWS) break;
+    if (held.size * 2 >= half || top.length === RADIUS_NAMED_MAX) break;
   }
   return { top, held: held.size, total, rows: listing.length, exposureCount: layout.exposureCount };
 }

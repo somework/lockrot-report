@@ -366,7 +366,7 @@ export function App({ model, title }: { model: Model; title?: string | undefined
   // summary, rail, list and footer are all under it, and `inert` while it is.
   const sheet = state.pkg !== null && !wide;
 
-  // The list's one Tab stop (PD-ROWS-11): the open package's row, else the one last opened — the
+  // The list's Tab stop (PD-ROWS-11, one per tree on Blast radius): the open package's row, else the one last opened — the
   // row Escape or Close just handed focus to — else the first. Written in the render body, like
   // `currentView` below: every change to it comes with a state change that renders anyway.
   const lastOpened = useRef<string | null>(state.pkg);
@@ -551,7 +551,7 @@ export function App({ model, title }: { model: Model; title?: string | undefined
   return (
     <ReportContext.Provider value={value}>
       {/* A link to the hash would route the page, so the skip moves focus itself: to the list's
-          Tab stop row, else to the panel. */}
+          Tab stop row, the cursor's when Blast radius has two trees, else to the panel. */}
       <a
         className="skip-link"
         href={`#${panelId}`}
@@ -559,8 +559,8 @@ export function App({ model, title }: { model: Model; title?: string | undefined
         onClick={(event) => {
           event.preventDefault();
           const panel = document.getElementById(panelId);
-          const row = panel?.querySelector<HTMLElement>('[data-pkg][tabindex="0"]');
-          (row ?? panel)?.focus();
+          const stops = [...(panel?.querySelectorAll<HTMLElement>('[data-pkg][tabindex="0"]') ?? [])];
+          (stops.find((stop) => stop.dataset.pkg === cursor) ?? stops[0] ?? panel)?.focus();
         }}
       >
         {skipLinkLabel(state.view === "radius" ? shownExposure(model.report).length > 0 : filterable)}

@@ -4,6 +4,7 @@ import {
   isRowOpen,
   isSinglesOpen,
   pulledTree,
+  RADIUS_NAMED_MAX,
   radiusAnswer,
   radiusCountPhrase,
   radiusLayout,
@@ -268,6 +269,10 @@ describe("radiusAnswer", () => {
 
     expect(answer?.top.map((r) => r.package)).toEqual(["a/p", "b/p", "c/p"]);
     expect(answer).toMatchObject({ held: 7 });
+  });
+
+  it("holds the SPEC value of RADIUS_NAMED_MAX (ruling R22-2, SPEC §7.9.20)", () => {
+    expect(RADIUS_NAMED_MAX).toBe(3);
   });
 
   it("is null when no row lists a finding", () => {

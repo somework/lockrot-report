@@ -174,6 +174,21 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     expect((await radiusRowPackages(page)).length).toBeGreaterThan(before);
   });
 
+  test("Tab from the opened one-each fold reaches the first item of its own tree", async ({ page }) => {
+    await go(page, WALLABAG, "", 390);
+    const singles = radiusSurface(page).getByRole("button", {
+      name: /more pull in one flagged package each/,
+    });
+    await singles.focus();
+    await page.keyboard.press("Enter");
+    await expect(singles).toHaveAttribute("aria-expanded", "true");
+
+    await page.keyboard.press("Tab");
+
+    const tree = radiusSurface(page).getByRole("tree", { name: /more pull in one flagged package each/ });
+    await expect(tree.getByRole("treeitem").first()).toBeFocused();
+  });
+
   test("an unflagged dev requirement still says dev", async ({ page }) => {
     // wallabag-main: phpunit/phpunit is require-dev, verdict ok, and lists flagged packages.
     await go(page, "baselined-wallabag-main");

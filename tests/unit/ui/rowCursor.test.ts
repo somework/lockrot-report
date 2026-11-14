@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { firstRows, innerTabIndex, pickCursor, rowTabIndex } from "../../../src/ui/rowCursor";
+import { firstRows, innerTabIndex, pickCursor, rowTabIndex, treeStop } from "../../../src/ui/rowCursor";
 
 const ROWS = ["a/one", "a/two", "a/three"];
 
@@ -54,5 +54,32 @@ describe("a package listed twice", () => {
     );
     expect([...first]).toEqual(["x", "y"]);
     expect(firstRows([], String, String).size).toBe(0);
+  });
+});
+
+describe("treeStop: one Tab stop per tree of a view that draws several", () => {
+  const row = (key: string, pkg: string) => ({ key, pkg });
+  const lead = [row("p:a/lead", "a/lead"), row("c:a/lead:x/shared", "x/shared")];
+  const singles = [row("p:a/single", "a/single"), row("c:a/single:x/shared", "x/shared")];
+  const first = new Set(["p:a/lead", "c:a/lead:x/shared", "p:a/single"]);
+  const stop = (rows: readonly { key: string; pkg: string }[], cursor: string | null) =>
+    treeStop(
+      rows,
+      (r) => r.pkg,
+      (r) => r.key,
+      first,
+      cursor,
+    );
+
+  test("is the cursor's row in the tree that holds it, and the first row in the other", () => {
+    expect([stop(lead, "a/single"), stop(singles, "a/single")]).toEqual(["p:a/lead", "p:a/single"]);
+  });
+
+  test("stays on the first row of a tree whose cursor row is the package's second row", () => {
+    expect([stop(lead, "x/shared"), stop(singles, "x/shared")]).toEqual(["c:a/lead:x/shared", "p:a/single"]);
+  });
+
+  test("is the first row with no cursor, and null for a tree with no rows", () => {
+    expect([stop(singles, null), stop([], "a/lead")]).toEqual(["p:a/single", null]);
   });
 });

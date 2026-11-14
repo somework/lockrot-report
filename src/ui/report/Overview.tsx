@@ -37,6 +37,7 @@ import { useReport } from "../context";
 import { CleanMark } from "../ledger/CleanMark";
 import { Waffle, WaffleKey } from "../ledger/Waffle";
 import "../ledger/ledger.css";
+import { usePrinted } from "../print/printContext";
 import { CopyMove } from "./CopyMove";
 import { PkgName, Words } from "./PkgName";
 import { TabLink } from "./TabLink";
@@ -314,13 +315,14 @@ function VerdictPicture({ report }: { report: Report2 }) {
 export function Lead({ report }: { report: Report2 }) {
   const figure = figureLine(report);
   const hasMoves = firstMoves(report).moves.length > 0;
+  const printed = usePrinted();
 
   return (
     <div className={`ov-top${hasMoves ? "" : " no-moves"}`}>
       <p className="ov-kicker">{OVERVIEW_WORDS.kicker}</p>
       <div className="ov-answer">
         {figure === null ? (
-          <p className="ov-empty">{OVERVIEW_WORDS.emptyLock}</p>
+          !printed && <p className="ov-empty">{OVERVIEW_WORDS.emptyLock}</p>
         ) : (
           <GradeLineView report={report} />
         )}

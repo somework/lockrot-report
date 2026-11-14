@@ -18,7 +18,7 @@ export interface ReportContextValue {
   now: Date;
   /** The two-column layout (`WIDE_QUERY`): the detail sits beside the list instead of over it. */
   wide: boolean;
-  /** The package whose row is the list's one Tab stop (`rowCursor.ts#pickCursor`, PD-ROWS-11), or
+  /** The package whose row is the list's Tab stop (`rowCursor.ts#pickCursor`, PD-ROWS-11; one per tree on Blast radius, `treeStop`), or
    *  null when the view draws no rows. */
   cursor: string | null;
   /** Opens the glossary dialog, returning focus to whatever was focused when it closes (usually

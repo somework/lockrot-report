@@ -264,6 +264,9 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     expect(doc.querySelector(".pd-summary .pd-lede")?.textContent).toBe("No packages in this lock.");
     expect(doc.querySelector('.pd-summary [data-surface="overview"] .waffle')).toBeNull();
     expect(doc.querySelector(".pd-intro-note")).toBeNull();
+    expect(doc.querySelector(".pd-summary .ov-empty")).toBeNull();
+    expect(doc.querySelector(".pd-radius .pd-lede")?.textContent).toBe("No packages in this lock.");
+    expect(doc.querySelector(".pd-radius .empty")).toBeNull();
   });
 
   it("draws the clean mark of a clean lock in the printed summary only, not in the Advisories section", () => {
@@ -286,6 +289,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "Nothing flagged, so no direct requirement pulls in a flagged package.",
     );
     expect(radius?.querySelector(".r2-answer")).toBeNull();
+    expect(radius?.querySelector(".empty")).toBeNull();
   });
 
   it("sets the running line the @page header prints as a CSS string on <html>", () => {

@@ -16,11 +16,12 @@ import {
   childKey2,
   parentKey2,
   RADIUS_WORDS,
-  radiusKeys2,
   radiusAnswer2,
+  radiusTrees2,
   radiusLayout2,
   radiusRowFacts,
   type RadiusFinding2,
+  type RadiusKey,
   type RadiusLayout2,
   type RadiusRow2,
 } from "../../domain/radius2";
@@ -28,7 +29,7 @@ import { useReport } from "../context";
 import { RowHint, RowHintContext, toneClass, useRowDescription } from "../common/common";
 import { usePrinted } from "../print/printContext";
 import { useNarrow } from "../useWide";
-import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
+import { firstRows, treeStop } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { FlagPills } from "./FlagPills";
 import { useReport2 } from "./useReport";
@@ -51,11 +52,12 @@ interface ChildProps {
   depth: number;
   note: string | null;
   report: Report2;
-  first: boolean;
+  /** The row is its tree's Tab stop. */
+  stop: boolean;
 }
 
-function ChildRow2({ finding, depth, parent, note, report, first }: ChildProps) {
-  const { state, dispatch, cursor } = useReport();
+function ChildRow2({ finding, depth, parent, note, report, stop }: ChildProps) {
+  const { state, dispatch } = useReport();
   const id = useId();
   const described = useRowDescription(`${id}-said`);
   return (
@@ -69,7 +71,7 @@ function ChildRow2({ finding, depth, parent, note, report, first }: ChildProps) 
       aria-label={finding.package}
       aria-describedby={described}
       aria-current={state.pkg === finding.package ? "true" : undefined}
-      tabIndex={rowTabIndex(finding.package, cursor, first)}
+      tabIndex={stop ? 0 : -1}
       {...openInteractions(finding.package, dispatch)}
     >
       {/* The description reads words without the CSS capitals of the spans below, which Chromium
@@ -96,16 +98,18 @@ function ParentRow2({
   rank,
   input,
   report,
-  first,
+  stopKey,
 }: {
   layout: RadiusLayout2;
   row: RadiusRow2;
   rank: number;
   input: OpenInput;
   report: Report2;
-  first: ReadonlySet<string>;
+  /** The key of the row that is this tree's Tab stop. */
+  stopKey: string | null;
 }) {
-  const { state, dispatch, cursor } = useReport();
+  const { state, dispatch } = useReport();
+  const isStop = stopKey === parentKey2(row.package);
   const printed = usePrinted();
   const canOpen = row.count > 0;
   const open = canOpen && (printed || isRowOpen(layout, row, input));
@@ -131,7 +135,7 @@ function ParentRow2({
       aria-label={row.package}
       aria-describedby={described}
       aria-current={state.pkg === row.package ? "true" : undefined}
-      tabIndex={rowTabIndex(row.package, cursor, first.has(parentKey2(row.package)))}
+      tabIndex={isStop ? 0 : -1}
       {...openInteractions(row.package, dispatch)}
     >
       <div className="r2-line">
@@ -171,7 +175,7 @@ function ParentRow2({
             aria-expanded={open ? "true" : "false"}
             aria-controls={kidsId}
             aria-label={RADIUS_WORDS.show(row)}
-            tabIndex={innerTabIndex(row.package, cursor, first.has(parentKey2(row.package)))}
+            tabIndex={isStop ? undefined : -1}
             onClick={toggle}
           >
             <span aria-hidden="true">{open ? "▾" : "▸"}</span>
@@ -195,7 +199,7 @@ function ParentRow2({
                 parent={(nodes[i + 1]?.depth ?? -1) > node.depth}
                 note={node.via.length > 0 ? RADIUS_WORDS.via(node.via) : null}
                 report={report}
-                first={first.has(childKey2(row.package, node.finding.package))}
+                stop={stopKey === childKey2(row.package, node.finding.package)}
               />
             ))}
         </ul>
@@ -240,7 +244,7 @@ function Fold({
 /** The Blast radius tab of a report-2 document: on screen the depth sentence, the printed summary
  *  holding it on paper; then each direct requirement on `exposure`, in lockrot's order. */
 export function RadiusView2() {
-  const { state } = useReport();
+  const { state, cursor } = useReport();
   const { report } = useReport2();
   const narrow = useNarrow();
   const printed = usePrinted();
@@ -251,12 +255,21 @@ export function RadiusView2() {
   const answer = radiusAnswer2(report, all);
   const hintId = `${useId()}-hint`;
   const input: OpenInput = { disclosure: state.disclosure, pkg: state.pkg, narrow };
+  const trees = radiusTrees2(layout, input);
   const first = firstRows(
-    radiusKeys2(layout, input),
+    [...trees.lead, ...trees.singles],
     (entry) => entry.pkg,
     (entry) => entry.key,
   );
-  const rows = (list: readonly RadiusRow2[], from: number) =>
+  const stopOf = (keys: readonly RadiusKey[]) =>
+    treeStop(
+      keys,
+      (entry) => entry.pkg,
+      (entry) => entry.key,
+      first,
+      cursor,
+    );
+  const rows = (list: readonly RadiusRow2[], from: number, stop: string | null) =>
     list.map((row, i) => (
       <ParentRow2
         key={row.package}
@@ -265,7 +278,7 @@ export function RadiusView2() {
         rank={from + i}
         input={input}
         report={report}
-        first={first}
+        stopKey={stop}
       />
     ));
 
@@ -273,7 +286,7 @@ export function RadiusView2() {
     return (
       <section className="radius2" data-surface="radius" aria-label={RADIUS_WORDS.tab}>
         {!printed && <h2 className="vh">{RADIUS_WORDS.tab}</h2>}
-        <p className="empty">{empty}</p>
+        {!printed && <p className="empty">{empty}</p>}
       </section>
     );
   }
@@ -286,7 +299,9 @@ export function RadiusView2() {
       {(layout.lead.length > 0 || layout.singles.length > 0) && <RowHint id={hintId} />}
       {layout.lead.length > 0 && (
         <ul className="r2-list" role="tree" aria-label={RADIUS_WORDS.list}>
-          <RowHintContext.Provider value={hintId}>{rows(layout.lead, 1)}</RowHintContext.Provider>
+          <RowHintContext.Provider value={hintId}>
+            {rows(layout.lead, 1, stopOf(trees.lead))}
+          </RowHintContext.Provider>
         </ul>
       )}
       {layout.singles.length > 0 && (
@@ -297,7 +312,7 @@ export function RadiusView2() {
         >
           <ul className="r2-list" role="tree" aria-label={RADIUS_WORDS.singles(layout.singles.length)}>
             <RowHintContext.Provider value={hintId}>
-              {rows(layout.singles, layout.lead.length + 1)}
+              {rows(layout.singles, layout.lead.length + 1, stopOf(trees.singles))}
             </RowHintContext.Provider>
           </ul>
         </Fold>
