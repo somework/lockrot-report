@@ -366,7 +366,7 @@ export function App({ model, title }: { model: Model; title?: string | undefined
   // summary, rail, list and footer are all under it, and `inert` while it is.
   const sheet = state.pkg !== null && !wide;
 
-  // The list's one Tab stop (PD-ROWS-11): the open package's row, else the one last opened — the
+  // The list's Tab stop (PD-ROWS-11, one per tree on Blast radius): the open package's row, else the one last opened — the
   // row Escape or Close just handed focus to — else the first. Written in the render body, like
   // `currentView` below: every change to it comes with a state change that renders anyway.
   const lastOpened = useRef<string | null>(state.pkg);

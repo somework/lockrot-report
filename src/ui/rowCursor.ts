@@ -9,7 +9,8 @@
  * Tab order only on that one row, so Tab from it goes to its own links and then leaves the list.
  *
  * A package listed twice (an Advisories package under two advisories, a Blast radius package under
- * two direct requirements) is the Tab stop on its first row only, so each list keeps one Tab stop.
+ * two direct requirements) is the Tab stop on its first row only, so each list keeps one Tab stop
+ * (each tree on Blast radius: `treeStop`).
  * Every row of the open package still reads as current: they all name it.
  */
 

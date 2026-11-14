@@ -98,7 +98,7 @@ function ParentRow2({
   rank,
   input,
   report,
-  stop,
+  stopKey,
 }: {
   layout: RadiusLayout2;
   row: RadiusRow2;
@@ -106,10 +106,10 @@ function ParentRow2({
   input: OpenInput;
   report: Report2;
   /** The key of the row that is this tree's Tab stop. */
-  stop: string | null;
+  stopKey: string | null;
 }) {
   const { state, dispatch } = useReport();
-  const isStop = stop === parentKey2(row.package);
+  const isStop = stopKey === parentKey2(row.package);
   const printed = usePrinted();
   const canOpen = row.count > 0;
   const open = canOpen && (printed || isRowOpen(layout, row, input));
@@ -199,7 +199,7 @@ function ParentRow2({
                 parent={(nodes[i + 1]?.depth ?? -1) > node.depth}
                 note={node.via.length > 0 ? RADIUS_WORDS.via(node.via) : null}
                 report={report}
-                stop={stop === childKey2(row.package, node.finding.package)}
+                stop={stopKey === childKey2(row.package, node.finding.package)}
               />
             ))}
         </ul>
@@ -278,7 +278,7 @@ export function RadiusView2() {
         rank={from + i}
         input={input}
         report={report}
-        stop={stop}
+        stopKey={stop}
       />
     ));
 

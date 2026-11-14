@@ -251,10 +251,15 @@ describe("the PHP state line", () => {
 
   test("leaves out the override clause when Composer refuses the config.platform value (ruling R22-1)", () => {
     const r = report({ platform_override: "^8.2", target: { php: "8.3.99", inside: true } });
-    const refused = {
-      ...r,
-      run: { ...r.run, move_check: { baseline: "not_checked", reason: "platform_config_invalid" } },
-    } as unknown as Report2;
+    const moveCheck: NonNullable<Report2["run"]["move_check"]> = {
+      composer: "2.9.3",
+      blocks_advisories: true,
+      blocking_disabled_by: [],
+      ignored_platform: [],
+      baseline: "not_checked",
+      reason: "platform_config_invalid",
+    };
+    const refused: Report2 = { ...r, run: { ...r.run, move_check: moveCheck } };
 
     expect(phpStateClauses(r)).toContain(
       "Composer solves at ^8.2, the PHP that config.platform.php sets in Composer's config, not the PHP of the machine",
