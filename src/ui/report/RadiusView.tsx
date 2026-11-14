@@ -273,7 +273,7 @@ export function RadiusView2() {
     return (
       <section className="radius2" data-surface="radius" aria-label={RADIUS_WORDS.tab}>
         {!printed && <h2 className="vh">{RADIUS_WORDS.tab}</h2>}
-        <p className="empty">{empty}</p>
+        {!printed && <p className="empty">{empty}</p>}
       </section>
     );
   }
