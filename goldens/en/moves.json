@@ -8740,6 +8740,46 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
+  "mc-joint-unsafe-holder-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^8.0.1",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": "It also updates h/x;calc from 1.0.0 to 1.1.0",
+      "commands": [],
+      "commands_label": null,
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "8.x needs php ^8.1",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements",
+          "items": []
+        }
+      ]
+    }
+  ],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [

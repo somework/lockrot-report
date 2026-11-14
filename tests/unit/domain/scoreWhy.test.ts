@@ -92,6 +92,23 @@ describe("whyLines", () => {
     );
   });
 
+  it("joins what a partial update clears as a list, as the Meanwhile line does", () => {
+    const { finding, report } = recorded("partial");
+    if (finding.security.status !== "vulnerable" || finding.security.partial === null)
+      throw new Error("partial has a partial update");
+    finding.security.partial.if_applied = { at_most: false, total: 12, verdict: "medium", assumes: [] };
+    finding.security.partial.unverified = [];
+    finding.security.partial.clears = [
+      { kind: "flag", id: "old-promise", basis: "branch_releasing" },
+      { kind: "flag", id: "stale", basis: "branch_releasing" },
+      ...finding.security.partial.clears.filter((c) => c.kind === "advisory"),
+    ];
+
+    expect(whyLines(finding, report)).toContain(
+      "composer update alone: 12, medium (it clears old-promise, stale and 1 of its 6 advisories)",
+    );
+  });
+
   it("adds no not-checked clause when a partial update checked every fact", () => {
     const { finding, report } = recorded("partial");
     if (finding.security.status !== "vulnerable" || finding.security.partial === null)

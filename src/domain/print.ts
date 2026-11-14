@@ -25,7 +25,7 @@ export function printHasBody2(section: PrintSection, report: Report2): boolean {
     const layout = printedRadius(report);
     return (
       layout.rows.length + layout.unlisted.length + layout.unattributed.length > 0 ||
-      radiusAnswer2(report, layout).length > 0
+      radiusAnswer2(report, population2(report, "radius")).length > 0
     );
   }
   return true;

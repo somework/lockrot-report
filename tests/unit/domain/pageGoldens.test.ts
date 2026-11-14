@@ -28,7 +28,7 @@ import {
   OVERVIEW_TAB_WORDS,
 } from "../../../src/domain/overviewTab";
 import { gradeLine, gradeLineText, waffleCaption, weighsMost } from "../../../src/domain/projectGrade";
-import { radiusAnswer2, radiusLayout2 } from "../../../src/domain/radius2";
+import { radiusAnswer2 } from "../../../src/domain/radius2";
 import { gatePartition, readyCount } from "../../../src/domain/readyToRun";
 import { runNotes } from "../../../src/domain/runTab";
 import { windowRows } from "../../../src/domain/phpWindow";
@@ -203,7 +203,7 @@ function radiusLead(report: Report2): string[] {
   if (empty !== null) return [empty];
   const all = population2(report, "radius");
   const depth = depthSentence(report);
-  return [...(depth === null ? [] : [depth]), ...radiusAnswer2(report, radiusLayout2(report, all, all))];
+  return [...(depth === null ? [] : [depth]), ...radiusAnswer2(report, all)];
 }
 
 /** The sheet's Provenance words of the packages that the golden names. */

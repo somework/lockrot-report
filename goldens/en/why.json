@@ -1697,6 +1697,11 @@
     "0 · ok · ages as of 2026-10-01",
     "checks missing: archived repository (S3) and repository activity (S4) not checked (host not supported: lockrot cannot ask codeberg.org)"
   ],
+  "mc-joint-unsafe-holder-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-69246; its own fix (upgrade on 8.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "no-feed-accepted-dagger": [
     "0 · ok · ages as of 2026-10-01",
     "checks not run: its advisories (no repository publishes advisories; accepted by your accept-unchecked list: the mirror has no advisory feed; composer audit runs against packagist.org in CI (‡))"

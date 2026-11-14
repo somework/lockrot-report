@@ -92,14 +92,12 @@ export function gradeMix(report: Report2, findings: readonly Finding[]): string 
 }
 
 /** The lead lines of §7.9.20 after the depth sentence: the flagged packages pulled in
- *  (`rot_depth.by_reach.transitive`), how many no exposure S7 lists, then the rows that hold them. */
-export function radiusAnswer2(report: Report2, layout: RadiusLayout2): string[] {
+ *  (`rot_depth.by_reach.transitive`), how many no exposure S7 lists, then the rows that hold them.
+ *  `all` is the tab's unfiltered population: the lead reads the same under any filter. */
+export function radiusAnswer2(report: Report2, all: readonly Finding[]): string[] {
   const pulled = report.rot_depth.by_reach.transitive;
-  const answer = radiusAnswer(layout, pulled);
-  if (answer === null && layout.narrowed) {
-    return ["No direct requirement lists a flagged package that matches the filter."];
-  }
   if (pulled === 0) return [];
+  const answer = radiusAnswer(radiusLayout2(report, all, all), pulled);
   const unlisted = pulled - listedTransitive(report);
   const sit = (n: number): string => `${String(n)} of them ${pluralNoun(n, "sits", "sit")} under`;
   const names = answer?.top.map((row) => row.package) ?? [];
@@ -108,9 +106,7 @@ export function radiusAnswer2(report: Report2, layout: RadiusLayout2): string[] 
     ...(unlisted > 0
       ? [`${sit(unlisted)} more than ${String(report.exposure_rule.max_fan_in)} direct requirements.`]
       : []),
-    ...(answer !== null && answer.held > 0 && !layout.narrowed
-      ? [`${sit(answer.held)} ${joinAnd(names)}.`]
-      : []),
+    ...(answer !== null && answer.held > 0 ? [`${sit(answer.held)} ${joinAnd(names)}.`] : []),
   ];
 }
 

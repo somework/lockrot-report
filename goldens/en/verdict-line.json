@@ -253,6 +253,7 @@
   "host-accept-expired-dagger": "Ok: nothing counts.",
   "host-accepted-dagger": "Ok: nothing counts.",
   "host-unsupported": "Ok: nothing counts.",
+  "mc-joint-unsafe-holder-dagger": "High: a high-severity advisory affects your version (CVE-2026-69246 PKSA-gcrk-3vtt-1r14: Guzzle: Noncanonical host can bypass host-based checks). It is not fixed on 7.x.",
   "no-feed-accepted-dagger": "Ok: nothing counts.",
   "no-feed-dagger": "Ok: nothing counts.",
   "no-tag-dagger": "High: it is pinned to the branch snapshot dev-master.",

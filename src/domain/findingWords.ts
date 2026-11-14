@@ -237,7 +237,7 @@ export function partialClears(finding: Finding, partial: NonNullable<SecurityVul
   const of = "parts" in finding.score ? finding.score.parts.security.of : 0;
   const flags = partial.clears.filter((c) => c.kind === "flag").map((c) => c.id);
   const advisories = partial.clears.filter((c) => c.kind === "advisory").length;
-  return [...flags, `${advisories} of its ${of} advisories`].join(" and ");
+  return joinAnd([...flags, `${advisories} of its ${of} advisories`]);
 }
 
 export const acceptsWholePackage = (finding: Finding): boolean =>

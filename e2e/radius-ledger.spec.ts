@@ -29,6 +29,16 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     }
   });
 
+  test("§7.9.20: the lead reads the same under a filter that hides every listed package", async ({
+    page,
+  }) => {
+    await go(page, "composite", "&verdict=critical");
+    await expect(radiusSurface(page).locator(".r2-answer")).toHaveText(
+      "2 flagged packages pulled in. 1 of them sits under friendsofsymfony/oauth-server-bundle.",
+    );
+    await expect(radiusSurface(page).locator(".r2-count")).toHaveCount(0);
+  });
+
   test("M25: the toggle states as many packages as the row then lists", async ({ page }) => {
     await go(page, WALLABAG);
     const toggle = radiusRow(page, "kphoen/rulerz").getByRole("button", {

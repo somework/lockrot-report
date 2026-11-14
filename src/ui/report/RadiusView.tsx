@@ -246,8 +246,9 @@ export function RadiusView2() {
   const printed = usePrinted();
   const empty = radiusEmpty(report);
   const depth = printed ? null : depthSentence(report);
-  const layout = radiusLayout2(report, applyFilters2(report, state, "radius"), population2(report, "radius"));
-  const answer = radiusAnswer2(report, layout);
+  const all = population2(report, "radius");
+  const layout = radiusLayout2(report, applyFilters2(report, state, "radius"), all);
+  const answer = radiusAnswer2(report, all);
   const hintId = `${useId()}-hint`;
   const input: OpenInput = { disclosure: state.disclosure, pkg: state.pkg, narrow };
   const first = firstRows(

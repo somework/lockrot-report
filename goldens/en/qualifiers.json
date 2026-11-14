@@ -4686,6 +4686,23 @@
       "Tripped by S3 and S4"
     ]
   },
+  "mc-joint-unsafe-holder-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through h/x;calc"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-69246"
+    ]
+  },
   "no-feed-accepted-dagger": {
     "reach": [],
     "origin": null,
