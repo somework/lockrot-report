@@ -551,7 +551,7 @@ export function App({ model, title }: { model: Model; title?: string | undefined
   return (
     <ReportContext.Provider value={value}>
       {/* A link to the hash would route the page, so the skip moves focus itself: to the list's
-          Tab stop row, else to the panel. */}
+          Tab stop row, the cursor's when Blast radius has two trees, else to the panel. */}
       <a
         className="skip-link"
         href={`#${panelId}`}
@@ -559,8 +559,8 @@ export function App({ model, title }: { model: Model; title?: string | undefined
         onClick={(event) => {
           event.preventDefault();
           const panel = document.getElementById(panelId);
-          const row = panel?.querySelector<HTMLElement>('[data-pkg][tabindex="0"]');
-          (row ?? panel)?.focus();
+          const stops = [...(panel?.querySelectorAll<HTMLElement>('[data-pkg][tabindex="0"]') ?? [])];
+          (stops.find((stop) => stop.dataset.pkg === cursor) ?? stops[0] ?? panel)?.focus();
         }}
       >
         {skipLinkLabel(state.view === "radius" ? shownExposure(model.report).length > 0 : filterable)}

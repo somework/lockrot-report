@@ -61,8 +61,12 @@ export interface RadiusKey {
 export const parentKey2 = (pkg: string): string => `p:${pkg}`;
 export const childKey2 = (parent: string, pkg: string): string => `c:${parent}:${pkg}`;
 
-/** Every row `RadiusView2` draws, top to bottom, keyed apart: a package can have several rows. */
-export function radiusKeys2(layout: RadiusLayout2, input: OpenInput): readonly RadiusKey[] {
+/** The rows of the two trees `RadiusView2` draws, top to bottom, keyed apart: a package can have
+ *  several rows. `singles` is empty while its fold is closed. */
+export function radiusTrees2(
+  layout: RadiusLayout2,
+  input: OpenInput,
+): { readonly lead: readonly RadiusKey[]; readonly singles: readonly RadiusKey[] } {
   const rowsOf = (rows: readonly RadiusRow2[]): RadiusKey[] =>
     rows.flatMap((row) => [
       { key: parentKey2(row.package), pkg: row.package },
@@ -73,7 +77,13 @@ export function radiusKeys2(layout: RadiusLayout2, input: OpenInput): readonly R
           }))
         : []),
     ]);
-  return [...rowsOf(layout.lead), ...(isSinglesOpen(layout, input) ? rowsOf(layout.singles) : [])];
+  return { lead: rowsOf(layout.lead), singles: isSinglesOpen(layout, input) ? rowsOf(layout.singles) : [] };
+}
+
+/** Every row `RadiusView2` draws, top to bottom. */
+export function radiusKeys2(layout: RadiusLayout2, input: OpenInput): readonly RadiusKey[] {
+  const { lead, singles } = radiusTrees2(layout, input);
+  return [...lead, ...singles];
 }
 
 /** The tab's rows top to bottom for `j`/`k`. */

@@ -57,3 +57,20 @@ export function firstRows<T>(
 
   return first;
 }
+
+/**
+ * The key of the row that is one tree's Tab stop, for a view of several trees that share a cursor
+ * (the ARIA tree pattern gives each tree one stop): the cursor's first row when this tree holds it,
+ * else the tree's first row.
+ */
+export function treeStop<T>(
+  rows: readonly T[],
+  pkg: (row: T) => string,
+  key: (row: T) => string,
+  first: ReadonlySet<string>,
+  cursor: string | null,
+): string | null {
+  const held = rows.find((row) => pkg(row) === cursor && first.has(key(row)));
+  const stop = held ?? rows[0];
+  return stop === undefined ? null : key(stop);
+}
